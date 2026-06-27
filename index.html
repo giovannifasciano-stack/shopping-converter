@@ -420,6 +420,7 @@
         <span class="flag" id="toFlag">🇺🇸</span>
         <span class="to-code" id="toCode">USD</span>
         <button class="copy-btn" id="copyBtn" onclick="copyResult()">⎘ copy</button>
+        <input type="text" id="copyField" readonly style="position:fixed;top:-9999px;left:-9999px;font-size:16px;" />
       </div>
     </div>
 
@@ -585,40 +586,40 @@
       const txt = document.getElementById('resultAmt').textContent;
       if (!txt || txt === '0.00' || txt === '—') return;
       const btn = document.getElementById('copyBtn');
+      const field = document.getElementById('copyField');
 
-      // Method 1: modern clipboard API
-      if (navigator.clipboard && window.isSecureContext) {
+      field.value = txt;
+      field.style.position = 'fixed';
+      field.style.top = '50%';
+      field.style.left = '50%';
+      field.style.transform = 'translate(-50%,-50%)';
+      field.style.opacity = '1';
+      field.style.zIndex = '9999';
+      field.focus();
+      field.setSelectionRange(0, 99999);
+
+      let copied = false;
+      try { copied = document.execCommand('copy'); } catch(e) {}
+
+      field.style.position = 'fixed';
+      field.style.top = '-9999px';
+      field.style.left = '-9999px';
+      field.style.opacity = '0';
+      field.style.zIndex = '';
+      field.style.transform = '';
+
+      if (copied) {
+        btn.textContent = '✓ copied';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '⎘ copy'; btn.classList.remove('copied'); }, 1500);
+      } else if (navigator.clipboard) {
         navigator.clipboard.writeText(txt).then(() => {
           btn.textContent = '✓ copied';
           btn.classList.add('copied');
           setTimeout(() => { btn.textContent = '⎘ copy'; btn.classList.remove('copied'); }, 1500);
-        }).catch(() => fallbackCopy(txt, btn));
+        }).catch(() => { window.prompt('Copia questo importo:', txt); });
       } else {
-        fallbackCopy(txt, btn);
-      }
-    }
-
-    function fallbackCopy(txt, btn) {
-      // Method 2: textarea select + execCommand
-      const ta = document.createElement('textarea');
-      ta.value = txt;
-      ta.setAttribute('readonly', '');
-      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;font-size:16px';
-      document.body.appendChild(ta);
-      ta.focus();
-      ta.select();
-      // iOS needs setSelectionRange
-      ta.setSelectionRange(0, 99999);
-      let success = false;
-      try { success = document.execCommand('copy'); } catch(e) {}
-      document.body.removeChild(ta);
-      if (success) {
-        btn.textContent = '✓ copied';
-        btn.classList.add('copied');
-        setTimeout(() => { btn.textContent = '⎘ copy'; btn.classList.remove('copied'); }, 1500);
-      } else {
-        // Method 3: prompt as last resort
-        window.prompt('Copy this amount:', txt);
+        window.prompt('Copia questo importo:', txt);
       }
     }
     });
