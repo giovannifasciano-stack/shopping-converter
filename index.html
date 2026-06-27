@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shopping Converter</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Outfit:wght@700;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #03061a;
+      --surface: #080e2e;
+      --surface2: #0d1540;
+      --surface3: #121c52;
+      --border: rgba(255,255,255,0.4);
+      --border2: rgba(255,255,255,0.6);
+      --accent: #7eb8f7;
+      --accent-dim: rgba(126,184,247,0.12);
+      --accent-dim2: rgba(126,184,247,0.06);
+      --text: #f0f2f0;
+      --text-muted: #7a8a7e;
+      --text-dim: #4a5a4e;
+      --red: #f5a0a0;
+      --orange: #f5d0a0;
+      --mono: 'DM Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(126,184,247,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(126,184,247,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper { position: relative; z-index: 1; width: 100%; max-width: 460px; }
+
+    header { margin-bottom: 2rem; }
+
+    .eyebrow {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      opacity: 0.6;
+      margin-bottom: 0.35rem;
+    }
+
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--text);
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 1.5rem;
+      margin-bottom: 0.6rem;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .currency-row {
+      display: grid;
+      grid-template-columns: 1fr 40px 1fr;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 1.25rem;
+    }
+
+    .cur-select-wrap { display: flex; flex-direction: column; gap: 4px; }
+
+    .cur-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    select {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      padding: 8px 10px;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      width: 100%;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237a8a7e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 28px;
+    }
+
+    select:focus { border-color: var(--accent); }
+    select option { background: #1e2221; }
+
+    .swap-btn {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--surface3); border: 1px solid var(--border2);
+      color: var(--text-muted); font-size: 16px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, color 0.2s, transform 0.3s;
+      margin-top: 16px; flex-shrink: 0;
+    }
+    .swap-btn:hover { background: var(--accent-dim); color: var(--accent); }
+    .swap-btn.spinning { transform: rotate(180deg); }
+
+    .input-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .input-group {
+      display: flex; align-items: center;
+      background: var(--surface2); border: 1px solid var(--border2);
+      border-radius: 10px; overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-group:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(200,245,160,0.07);
+    }
+
+    .cur-tag {
+      font-family: var(--mono); font-size: 11px; color: var(--text-muted);
+      padding: 0 12px; white-space: nowrap; border-right: 1px solid var(--border);
+      line-height: 50px; background: rgba(255,255,255,0.02);
+      min-width: 54px; text-align: center;
+    }
+    .cur-tag.right { border-right: none; border-left: 1px solid var(--border); min-width: auto; }
+
+    input[type="number"] {
+      flex: 1; background: transparent; border: none; outline: none;
+      color: var(--text); font-family: var(--mono); font-size: 22px; font-weight: 300;
+      padding: 12px 14px; width: 100%; -moz-appearance: textfield;
+    }
+    input[type="number"].sm { font-size: 16px; padding: 9px 12px; }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    input[type="number"]::placeholder { color: var(--text-dim); }
+
+    .divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+    .section-title {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--text-dim);
+    }
+
+    .switch-wrap { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .switch-label { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+    .switch {
+      width: 36px; height: 20px; background: var(--surface3);
+      border: 1px solid var(--border2); border-radius: 10px;
+      position: relative; transition: background 0.25s, border-color 0.25s; flex-shrink: 0;
+    }
+    .switch.on { background: var(--accent); border-color: var(--accent); }
+    .switch::after {
+      content: ''; position: absolute; width: 14px; height: 14px; border-radius: 50%;
+      background: var(--text-dim); top: 2px; left: 2px;
+      transition: left 0.25s, background 0.25s;
+    }
+    .switch.on::after { left: 18px; background: var(--bg); }
+
+    .collapsible {
+      overflow: hidden; max-height: 0; opacity: 0;
+      transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+    }
+    .collapsible.visible { max-height: 120px; opacity: 1; margin-top: 0.75rem; }
+
+    .controls-row { display: flex; align-items: center; gap: 10px; }
+    .small-input-wrap {
+      display: flex; align-items: center; background: var(--surface2);
+      border: 1px solid var(--border2); border-radius: 8px; overflow: hidden;
+      flex: 1; transition: border-color 0.2s;
+    }
+    .small-input-wrap:focus-within { border-color: var(--accent); }
+
+    .presets { display: flex; gap: 6px; flex-wrap: wrap; }
+    .preset-btn {
+      font-family: var(--mono); font-size: 11px; color: var(--text-muted);
+      background: var(--surface3); border: 1px solid var(--border2);
+      border-radius: 6px; padding: 6px 10px; cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s; white-space: nowrap;
+    }
+    .preset-btn:hover, .preset-btn.active { background: var(--accent-dim); color: var(--accent);         border-color: rgba(126,184,247,0.25); }
+
+    .breakdown {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 18px; overflow: hidden; margin-bottom: 0.6rem;
+      animation: fadeUp 0.4s ease 0.08s both;
+    }
+    .breakdown-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.8rem 1.5rem; border-bottom: 1px solid var(--border);
+    }
+    .breakdown-row:last-child { border-bottom: none; }
+    .b-label { font-size: 12px; color: var(--text-muted); font-family: var(--mono); letter-spacing: 0.03em; }
+    .b-val { font-family: var(--mono); font-size: 13px; color: var(--text); }
+    .b-val.red { color: var(--red); }
+    .b-val.orange { color: var(--orange); }
+
+    .result-card {
+      background: var(--accent-dim2); border: 1px solid rgba(200,245,160,0.13);
+      border-radius: 18px; padding: 1.4rem 1.5rem; margin-bottom: 0.6rem;
+      display: flex; justify-content: space-between; align-items: center;
+      animation: fadeUp 0.4s ease 0.14s both;
+    }
+    .result-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); opacity: 0.6; margin-bottom: 5px; }
+    .result-amount { font-family: var(--mono); font-size: 34px; font-weight: 300; color: #c8f5a0; letter-spacing: -0.02em; }
+    .result-amount.placeholder { opacity: 0.15; }
+    .result-sub { font-family: var(--mono); font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .flag-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+
+    .copy-btn {
+      font-family: var(--mono); font-size: 11px; color: var(--text-muted);
+      background: var(--surface3); border: 1px solid var(--border2);
+      border-radius: 8px; padding: 6px 10px; cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      margin-top: 6px; letter-spacing: 0.05em;
+    }
+    .copy-btn:hover { background: var(--accent-dim); color: var(--accent); border-color: rgba(126,184,247,0.25); }
+    .copy-btn.copied { background: var(--accent-dim); color: var(--accent); border-color: rgba(126,184,247,0.25); }
+    .flag { font-size: 26px; line-height: 1; }
+    .to-code { font-family: var(--mono); font-size: 11px; color: var(--text-muted); letter-spacing: 0.08em; }
+
+    .rate-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.5rem 0; animation: fadeUp 0.4s ease 0.2s both;
+    }
+    .rate-info { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
+    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; flex-shrink: 0; }
+    .live-dot.loading { background: var(--text-dim); animation: none; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+    .refresh-btn { font-family: var(--mono); font-size: 11px; color: var(--text-dim); background: none; border: none; cursor: pointer; padding: 2px 6px; border-radius: 4px; transition: color 0.2s; letter-spacing: 0.05em; }
+    .refresh-btn:hover { color: var(--accent); }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <header>
+      <p class="eyebrow">Shopping Tool</p>
+      <h1>Shopping <span style="color:var(--accent)">Converter</span></h1>
+    </header>
+
+    <div class="card">
+      <div class="currency-row">
+        <div class="cur-select-wrap">
+          <span class="cur-label">From</span>
+          <select id="fromCur">
+            <option value="EUR">🇪🇺 EUR — Euro</option>
+            <option value="CHF">🇨🇭 CHF — Swiss Franc</option>
+            <option value="USD">🇺🇸 USD — US Dollar</option>
+            <option value="GBP">🇬🇧 GBP — British Pound</option>
+            <option value="JPY">🇯🇵 JPY — Japanese Yen</option>
+            <option value="CAD">🇨🇦 CAD — Canadian Dollar</option>
+            <option value="AUD">🇦🇺 AUD — Australian Dollar</option>
+            <option value="CNY">🇨🇳 CNY — Chinese Yuan</option>
+            <option value="AED">🇦🇪 AED — UAE Dirham</option>
+            <option value="HKD">🇭🇰 HKD — Hong Kong Dollar</option>
+          </select>
+        </div>
+        <button class="swap-btn" id="swapBtn">⇄</button>
+        <div class="cur-select-wrap">
+          <span class="cur-label">To</span>
+          <select id="toCur">
+            <option value="USD">🇺🇸 USD — US Dollar</option>
+            <option value="EUR">🇪🇺 EUR — Euro</option>
+            <option value="CHF">🇨🇭 CHF — Swiss Franc</option>
+            <option value="GBP">🇬🇧 GBP — British Pound</option>
+            <option value="JPY">🇯🇵 JPY — Japanese Yen</option>
+            <option value="CAD">🇨🇦 CAD — Canadian Dollar</option>
+            <option value="AUD">🇦🇺 AUD — Australian Dollar</option>
+            <option value="CNY">🇨🇳 CNY — Chinese Yuan</option>
+            <option value="AED">🇦🇪 AED — UAE Dirham</option>
+            <option value="HKD">🇭🇰 HKD — Hong Kong Dollar</option>
+          </select>
+        </div>
+      </div>
+
+      <span class="input-label">Amount</span>
+      <div class="input-group">
+        <span class="cur-tag" id="fromTag">EUR</span>
+        <input type="number" id="amountInput" placeholder="0.00" min="0" step="0.01" autofocus />
+      </div>
+
+      <hr class="divider" />
+
+      <!-- Discount -->
+      <div class="section-header">
+        <span class="section-title">Discount</span>
+        <div class="switch-wrap" id="discToggle">
+          <span class="switch-label" id="discLabel">off</span>
+          <div class="switch" id="discSwitch"></div>
+        </div>
+      </div>
+      <div class="collapsible" id="discControls">
+        <div class="controls-row">
+          <div class="small-input-wrap">
+            <input type="number" class="sm" id="discRate" placeholder="0" min="0" max="100" step="0.1" />
+            <span class="cur-tag right">%</span>
+          </div>
+          <div class="presets">
+            <button class="preset-btn disc-preset" data-pct="5">5%</button>
+            <button class="preset-btn disc-preset" data-pct="10">10%</button>
+            <button class="preset-btn disc-preset" data-pct="15">15%</button>
+            <button class="preset-btn disc-preset" data-pct="20">20%</button>
+            <button class="preset-btn disc-preset" data-pct="30">30%</button>
+            <button class="preset-btn disc-preset" data-pct="50">50%</button>
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider" />
+
+      <!-- VAT -->
+      <div class="section-header">
+        <span class="section-title">VAT deduction</span>
+        <div class="switch-wrap" id="vatToggle">
+          <span class="switch-label" id="vatLabel">off</span>
+          <div class="switch" id="vatSwitch"></div>
+        </div>
+      </div>
+      <div class="collapsible" id="vatControls">
+        <div class="controls-row">
+          <div class="small-input-wrap">
+            <input type="number" class="sm" id="vatRate" placeholder="0" min="0" max="100" step="0.1" />
+            <span class="cur-tag right">%</span>
+          </div>
+          <div class="presets">
+            <button class="preset-btn vat-preset" data-pct="8.1">8.1%</button>
+            <button class="preset-btn vat-preset" data-pct="22">22%</button>
+            <button class="preset-btn vat-preset" data-pct="20">20%</button>
+            <button class="preset-btn vat-preset" data-pct="19">19%</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Breakdown -->
+    <div class="breakdown" id="breakdownCard" style="display:none">
+      <div class="breakdown-row" id="row-orig" style="display:none">
+        <span class="b-label">Original price</span>
+        <span class="b-val" id="d-orig">—</span>
+      </div>
+      <div class="breakdown-row" id="row-disc" style="display:none">
+        <span class="b-label">Discount (<span id="d-discpct">0</span>%)</span>
+        <span class="b-val red" id="d-disc">—</span>
+      </div>
+      <div class="breakdown-row" id="row-saved" style="display:none">
+        <span class="b-label">You save</span>
+        <span class="b-val orange" id="d-saved">—</span>
+      </div>
+      <div class="breakdown-row" id="row-after-disc" style="display:none">
+        <span class="b-label">After discount</span>
+        <span class="b-val" id="d-after">—</span>
+      </div>
+      <div class="breakdown-row" id="row-gross" style="display:none">
+        <span class="b-label">Gross (incl. VAT)</span>
+        <span class="b-val" id="v-gross">—</span>
+      </div>
+      <div class="breakdown-row" id="row-vat" style="display:none">
+        <span class="b-label">VAT (<span id="v-vatpct">0</span>%)</span>
+        <span class="b-val red" id="v-vat">—</span>
+      </div>
+      <div class="breakdown-row" id="row-net" style="display:none">
+        <span class="b-label">Net ex-VAT</span>
+        <span class="b-val" id="v-net">—</span>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="result-card">
+      <div>
+        <p class="result-label" id="resultLabel">Result</p>
+        <p class="result-amount placeholder" id="resultAmt">0.00</p>
+        <p class="result-sub" id="resultSub" style="display:none"></p>
+      </div>
+      <div class="flag-wrap">
+        <span class="flag" id="toFlag">🇺🇸</span>
+        <span class="to-code" id="toCode">USD</span>
+        <button class="copy-btn" id="copyBtn" onclick="copyResult()">⎘ copy</button>
+      </div>
+    </div>
+
+    <!-- Rate bar -->
+    <div class="rate-bar">
+      <div class="rate-info">
+        <span class="live-dot loading" id="liveDot"></span>
+        <span id="rateText">Fetching live rate…</span>
+      </div>
+      <button class="refresh-btn" onclick="fetchRate()">↻ refresh</button>
+    </div>
+  </div>
+
+  <script>
+    const FLAGS   = { EUR:'🇪🇺', CHF:'🇨🇭', USD:'🇺🇸', GBP:'🇬🇧', JPY:'🇯🇵', CAD:'🇨🇦', AUD:'🇦🇺', CNY:'🇨🇳', AED:'🇦🇪', HKD:'🇭🇰' };
+    const SYMBOLS = { EUR:'€', CHF:'CHF ', USD:'$', GBP:'£', JPY:'¥', CAD:'CA$', AUD:'A$', CNY:'¥', AED:'AED ', HKD:'HK$' };
+    const FALLBACK= { EUR:1, CHF:0.9276, USD:1.1478, GBP:0.8418, JPY:162.5, CAD:1.5590, AUD:1.7640, CNY:8.315, AED:4.214, HKD:8.951 };
+
+    let rates = {}, vatOn = false, discOn = false;
+
+    const fromCur      = document.getElementById('fromCur');
+    const toCur        = document.getElementById('toCur');
+    const amountInput  = document.getElementById('amountInput');
+    const fromTag      = document.getElementById('fromTag');
+    const vatRateInput = document.getElementById('vatRate');
+    const discRateInput= document.getElementById('discRate');
+
+    function fmt(n, cur) {
+      if (cur === 'JPY') return (SYMBOLS[cur]||'') + Math.round(n).toLocaleString('en-US');
+      return (SYMBOLS[cur]||'') + n.toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
+    }
+    function pctLabel(v) { return v % 1 === 0 ? v : parseFloat(v).toFixed(1); }
+
+    function show(id, visible) {
+      document.getElementById(id).style.display = visible ? 'flex' : 'none';
+    }
+
+    function calculate() {
+      const raw  = parseFloat(amountInput.value);
+      const from = fromCur.value, to = toCur.value;
+      const r    = rates[to];
+      const vatPct  = vatOn  ? (parseFloat(vatRateInput.value)  || 0) : 0;
+      const discPct = discOn ? (parseFloat(discRateInput.value) || 0) : 0;
+
+      fromTag.textContent = from;
+      document.getElementById('toFlag').textContent = FLAGS[to] || '💱';
+      document.getElementById('toCode').textContent = to;
+
+      const hasInput   = !isNaN(raw) && amountInput.value !== '';
+      const showDisc   = discOn && discPct > 0 && hasInput;
+      const showVat    = vatOn  && vatPct  > 0 && hasInput;
+      const showBd     = showDisc || showVat;
+
+      document.getElementById('breakdownCard').style.display = showBd ? 'block' : 'none';
+
+      let base = hasInput ? raw : 0;
+
+      // Discount first
+      let afterDisc = base;
+      if (showDisc) {
+        const discAmt = base * discPct / 100;
+        afterDisc = base - discAmt;
+        document.getElementById('d-orig').textContent    = fmt(base, from);
+        document.getElementById('d-discpct').textContent = pctLabel(discPct);
+        document.getElementById('d-disc').textContent    = '− ' + fmt(discAmt, from);
+        document.getElementById('d-saved').textContent   = fmt(discAmt, from);
+        document.getElementById('d-after').textContent   = fmt(afterDisc, from);
+      }
+      show('row-orig',      showDisc);
+      show('row-disc',      showDisc);
+      show('row-saved',     showDisc);
+      show('row-after-disc',showDisc);
+
+      // VAT on post-discount amount
+      let finalAmount = afterDisc;
+      if (showVat) {
+        const vatAmt = afterDisc * vatPct / 100 / (1 + vatPct / 100);
+        finalAmount  = afterDisc - vatAmt;
+        document.getElementById('v-gross').textContent   = fmt(afterDisc, from);
+        document.getElementById('v-vatpct').textContent  = pctLabel(vatPct);
+        document.getElementById('v-vat').textContent     = '− ' + fmt(vatAmt, from);
+        document.getElementById('v-net').textContent     = fmt(finalAmount, from);
+      }
+      show('row-gross', showVat);
+      show('row-vat',   showVat);
+      show('row-net',   showVat);
+
+      // Result
+      const resultEl  = document.getElementById('resultAmt');
+      const resultSub = document.getElementById('resultSub');
+
+      if (!hasInput) {
+        resultEl.textContent = '0.00';
+        resultEl.classList.add('placeholder');
+        resultSub.style.display = 'none';
+        document.getElementById('resultLabel').textContent = 'Result';
+        return;
+      }
+
+      resultEl.classList.remove('placeholder');
+      resultEl.textContent = r ? fmt(finalAmount * r, to) : '—';
+
+      if (showDisc || showVat) {
+        document.getElementById('resultLabel').textContent = 'Converted result';
+        resultSub.textContent = `Base: ${fmt(finalAmount, from)}`;
+        resultSub.style.display = 'block';
+      } else {
+        document.getElementById('resultLabel').textContent = 'Result';
+        resultSub.style.display = 'none';
+      }
+    }
+
+    async function fetchRate() {
+      document.getElementById('liveDot').classList.add('loading');
+      document.getElementById('rateText').textContent = 'Fetching live rates…';
+      const from = fromCur.value;
+      let ok = false, source = '';
+
+      const tryFetch = async (url) => {
+        const res = await fetch(url, { mode:'cors' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      };
+
+      if (!ok) try {
+        const data = await tryFetch(`https://open.er-api.com/v6/latest/${from}`);
+        if (data.result === 'success') {
+          rates = { ...data.rates, [from]:1 };
+          source = 'er-api · hourly'; ok = true;
+        }
+      } catch(e) { }
+
+      if (!ok) try {
+        const data = await tryFetch(`https://api.frankfurter.app/latest?from=${from}`);
+        rates = { [from]:1, ...data.rates };
+        source = 'ECB · daily'; ok = true;
+      } catch(e) { }
+
+      if (!ok) {
+        const base = FALLBACK[from] || 1;
+        rates = {};
+        Object.keys(FALLBACK).forEach(k => rates[k] = FALLBACK[k] / base);
+        rates[from] = 1;
+        source = 'offline · fallback';
+      }
+
+      if (ok) document.getElementById('liveDot').classList.remove('loading');
+
+      const to = toCur.value, r = rates[to];
+      const t = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+      const d = new Date().toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit', year:'numeric' });
+      document.getElementById('rateText').textContent = r
+        ? `1 ${from} = ${fmt(r, to)} ${to}  ·  ${d} ${t}  ·  ${source}`
+        : `Rate unavailable · ${source}`;
+      calculate();
+    }
+
+    document.getElementById('swapBtn').addEventListener('click', () => {
+      const b = document.getElementById('swapBtn');
+      b.classList.add('spinning'); setTimeout(() => b.classList.remove('spinning'), 300);
+      const tmp = fromCur.value; fromCur.value = toCur.value; toCur.value = tmp;
+      function copyResult() {
+      const txt = document.getElementById('resultAmt').textContent;
+      if (!txt || txt === '0.00' || txt === '—') return;
+      const btn = document.getElementById('copyBtn');
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(txt).then(() => {
+            btn.textContent = '✓ copied';
+            btn.classList.add('copied');
+            setTimeout(() => { btn.textContent = '⎘ copy'; btn.classList.remove('copied'); }, 1500);
+          });
+        } else {
+          // Fallback for iframe/non-HTTPS
+          const el = document.createElement('textarea');
+          el.value = txt;
+          el.style.position = 'fixed';
+          el.style.opacity = '0';
+          document.body.appendChild(el);
+          el.focus(); el.select();
+          document.execCommand('copy');
+          document.body.removeChild(el);
+          btn.textContent = '✓ copied';
+          btn.classList.add('copied');
+          setTimeout(() => { btn.textContent = '⎘ copy'; btn.classList.remove('copied'); }, 1500);
+        }
+      } catch(e) {
+        btn.textContent = '⚠ failed';
+        setTimeout(() => { btn.textContent = '⎘ copy'; }, 1500);
+      }
+    }
+    });
+
+    fromCur.addEventListener('change', fetchRate);
+    toCur.addEventListener('change', fetchRate);
+    amountInput.addEventListener('input', calculate);
+    amountInput.addEventListener('change', fetchRate);
+
+    // VAT toggle
+    document.getElementById('vatToggle').addEventListener('click', () => {
+      vatOn = !vatOn;
+      document.getElementById('vatSwitch').classList.toggle('on', vatOn);
+      document.getElementById('vatLabel').textContent = vatOn ? 'on' : 'off';
+      document.getElementById('vatControls').classList.toggle('visible', vatOn);
+      calculate();
+    });
+    vatRateInput.addEventListener('input', () => {
+      document.querySelectorAll('.vat-preset').forEach(b => b.classList.toggle('active', parseFloat(b.dataset.pct) === parseFloat(vatRateInput.value)));
+      calculate();
+    });
+    document.querySelectorAll('.vat-preset').forEach(btn => btn.addEventListener('click', () => {
+      if (btn.classList.contains('active')) {
+        vatRateInput.value = '';
+        document.querySelectorAll('.vat-preset').forEach(b => b.classList.remove('active'));
+      } else {
+        vatRateInput.value = btn.dataset.pct;
+        document.querySelectorAll('.vat-preset').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
+      calculate();
+    }));
+
+    // Discount toggle
+    document.getElementById('discToggle').addEventListener('click', () => {
+      discOn = !discOn;
+      document.getElementById('discSwitch').classList.toggle('on', discOn);
+      document.getElementById('discLabel').textContent = discOn ? 'on' : 'off';
+      document.getElementById('discControls').classList.toggle('visible', discOn);
+      calculate();
+    });
+    discRateInput.addEventListener('input', () => {
+      document.querySelectorAll('.disc-preset').forEach(b => b.classList.toggle('active', parseFloat(b.dataset.pct) === parseFloat(discRateInput.value)));
+      calculate();
+    });
+    document.querySelectorAll('.disc-preset').forEach(btn => btn.addEventListener('click', () => {
+      if (btn.classList.contains('active')) {
+        discRateInput.value = '';
+        document.querySelectorAll('.disc-preset').forEach(b => b.classList.remove('active'));
+      } else {
+        discRateInput.value = btn.dataset.pct;
+        document.querySelectorAll('.disc-preset').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
+      calculate();
+    }));
+
+    fetchRate();
+    setInterval(fetchRate, 60000);
+  </script>
+</body>
+</html>
