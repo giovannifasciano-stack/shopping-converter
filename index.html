@@ -585,30 +585,40 @@
       const txt = document.getElementById('resultAmt').textContent;
       if (!txt || txt === '0.00' || txt === '—') return;
       const btn = document.getElementById('copyBtn');
-      try {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(txt).then(() => {
-            btn.textContent = '✓ copied';
-            btn.classList.add('copied');
-            setTimeout(() => { btn.textContent = '⎘ copy'; btn.classList.remove('copied'); }, 1500);
-          });
-        } else {
-          // Fallback for iframe/non-HTTPS
-          const el = document.createElement('textarea');
-          el.value = txt;
-          el.style.position = 'fixed';
-          el.style.opacity = '0';
-          document.body.appendChild(el);
-          el.focus(); el.select();
-          document.execCommand('copy');
-          document.body.removeChild(el);
+
+      // Method 1: modern clipboard API
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(txt).then(() => {
           btn.textContent = '✓ copied';
           btn.classList.add('copied');
           setTimeout(() => { btn.textContent = '⎘ copy'; btn.classList.remove('copied'); }, 1500);
-        }
-      } catch(e) {
-        btn.textContent = '⚠ failed';
-        setTimeout(() => { btn.textContent = '⎘ copy'; }, 1500);
+        }).catch(() => fallbackCopy(txt, btn));
+      } else {
+        fallbackCopy(txt, btn);
+      }
+    }
+
+    function fallbackCopy(txt, btn) {
+      // Method 2: textarea select + execCommand
+      const ta = document.createElement('textarea');
+      ta.value = txt;
+      ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;font-size:16px';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      // iOS needs setSelectionRange
+      ta.setSelectionRange(0, 99999);
+      let success = false;
+      try { success = document.execCommand('copy'); } catch(e) {}
+      document.body.removeChild(ta);
+      if (success) {
+        btn.textContent = '✓ copied';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '⎘ copy'; btn.classList.remove('copied'); }, 1500);
+      } else {
+        // Method 3: prompt as last resort
+        window.prompt('Copy this amount:', txt);
       }
     }
     });
