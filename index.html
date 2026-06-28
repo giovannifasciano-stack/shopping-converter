@@ -302,9 +302,18 @@
     @media print {
       @page { size: A4; margin: 10mm; }
       * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      body { background: #fff !important; padding: 0 !important; }
+      html { height: auto !important; }
+      body {
+        background: #fff !important;
+        padding: 0 !important;
+        display: block !important;
+        min-height: 0 !important;
+        height: auto !important;
+        align-items: flex-start !important;
+        justify-content: flex-start !important;
+      }
       body::before { display: none !important; }
-      .wrapper { max-width: 100% !important; }
+      .wrapper { max-width: 100% !important; margin: 0 !important; }
 
       /* Hide interactive / non-essential elements */
       .action-bar, .rate-bar, .swap-btn,
@@ -797,4 +806,5 @@
     setInterval(fetchRate, 60000);
   </script>
 </body>
+</html>
 </html>
