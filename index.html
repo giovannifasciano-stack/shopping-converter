@@ -67,11 +67,12 @@
 
     h1 {
       font-family: 'Outfit', sans-serif;
-      font-size: 22px;
+      font-size: 17.6px;
       font-weight: 900;
       color: var(--text);
-      letter-spacing: -0.02em;
+      letter-spacing: -0.01em;
       line-height: 1.1;
+      text-transform: uppercase;
     }
 
     .card {
@@ -82,6 +83,7 @@
       margin-bottom: 0.6rem;
       animation: fadeUp 0.4s ease both;
     }
+    .head-card { padding: 1.2rem 1.5rem; }
 
     .currency-row {
       display: grid;
@@ -309,7 +311,7 @@
       .copy-btn, #copyField { display: none !important; }
 
       /* Header */
-      h1 { color: #111 !important; font-size: 20px !important; }
+      h1 { color: #111 !important; font-size: 16px !important; }
       .eyebrow { color: #888 !important; opacity: 1 !important; }
       .print-date { display: block; font-family: var(--mono); font-size: 11px; color: #888; margin-top: 4px; }
 
@@ -375,11 +377,11 @@
 </head>
 <body>
   <div class="wrapper">
-    <header>
+    <div class="card head-card">
       <p class="eyebrow">Shopping Tool</p>
       <h1>Shopping <span style="color:var(--accent)">Converter</span></h1>
       <p class="print-date" id="printDate"></p>
-    </header>
+    </div>
 
     <div class="card">
       <div class="currency-row">
@@ -685,7 +687,10 @@
       const b = document.getElementById('swapBtn');
       b.classList.add('spinning'); setTimeout(() => b.classList.remove('spinning'), 300);
       const tmp = fromCur.value; fromCur.value = toCur.value; toCur.value = tmp;
-      function copyResult() {
+      fetchRate();
+    });
+
+    function copyResult() {
       const txt = document.getElementById('resultAmt').textContent;
       if (!txt || txt === '0.00' || txt === '—') return;
       const btn = document.getElementById('copyBtn');
@@ -725,7 +730,6 @@
         window.prompt('Copia questo importo:', txt);
       }
     }
-    });
 
     fromCur.addEventListener('change', fetchRate);
     toCur.addEventListener('change', fetchRate);
