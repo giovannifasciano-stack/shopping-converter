@@ -64,6 +64,19 @@
       opacity: 0.6;
       margin-bottom: 0.35rem;
     }
+    .ver-pill {
+      display: inline-block;
+      text-transform: none;
+      letter-spacing: 0.02em;
+      font-size: 9px;
+      color: var(--accent);
+      border: 1px solid rgba(126,184,247,0.4);
+      border-radius: 5px;
+      padding: 1px 5px;
+      margin-left: 6px;
+      vertical-align: middle;
+      opacity: 0.9;
+    }
 
     h1 {
       font-family: 'Outfit', sans-serif;
@@ -344,6 +357,7 @@
       .head-card { padding: 8px 11px !important; }
       h1 { color: #111 !important; font-size: 12px !important; }
       .eyebrow { color: #888 !important; opacity: 1 !important; font-size: 8px !important; margin-bottom: 2px !important; }
+      .ver-pill { color: #888 !important; border-color: #ccc !important; font-size: 8px !important; }
       .print-date { display: block; font-family: var(--mono); font-size: 8px; color: #888; margin-top: 2px; }
 
       /* Cards */
@@ -402,7 +416,7 @@
 <body>
   <div class="wrapper">
     <div class="card head-card">
-      <p class="eyebrow">Shopping Tool</p>
+      <p class="eyebrow">Shopping Tool<span class="ver-pill">v1.0</span></p>
       <h1>Shopping <span style="color:var(--accent)">Converter</span></h1>
       <p class="print-date" id="printDate"></p>
     </div>
