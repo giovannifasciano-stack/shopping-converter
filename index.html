@@ -300,78 +300,78 @@
     .print-date { display: none; }
 
     @media print {
+      @page { size: A4; margin: 10mm; }
       * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      body { background: #fff !important; padding: 20px !important; }
+      body { background: #fff !important; padding: 0 !important; }
       body::before { display: none !important; }
       .wrapper { max-width: 100% !important; }
 
-      /* Hide interactive elements */
+      /* Hide interactive / non-essential elements */
       .action-bar, .rate-bar, .swap-btn,
-      .collapsible, .section-header .switch-wrap,
+      .collapsible, .section-header, .divider,
       .copy-btn, #copyField { display: none !important; }
 
+      /* No conversion (From == To) → hide the currency boxes up top */
+      body.no-convert .currency-row { display: none !important; }
+
+      /* Keep each card whole, no splitting across pages */
+      .card, .breakdown, .result-card { break-inside: avoid; page-break-inside: avoid; }
+
       /* Header */
-      h1 { color: #111 !important; font-size: 16px !important; }
-      .eyebrow { color: #888 !important; opacity: 1 !important; }
-      .print-date { display: block; font-family: var(--mono); font-size: 11px; color: #888; margin-top: 4px; }
+      .head-card { padding: 8px 11px !important; }
+      h1 { color: #111 !important; font-size: 12px !important; }
+      .eyebrow { color: #888 !important; opacity: 1 !important; font-size: 8px !important; margin-bottom: 2px !important; }
+      .print-date { display: block; font-family: var(--mono); font-size: 8px; color: #888; margin-top: 2px; }
 
       /* Cards */
       .card, .breakdown, .result-card {
         background: #fff !important;
         border: 1px solid #ddd !important;
         box-shadow: none !important;
-        border-radius: 8px !important;
-        margin-bottom: 10px !important;
+        border-radius: 6px !important;
+        margin-bottom: 6px !important;
+        padding: 9px 12px !important;
       }
+      .breakdown { padding: 0 !important; }
 
       /* Currency selectors — show as plain text */
-      .currency-row { display: flex !important; gap: 16px !important; align-items: flex-start !important; }
+      .currency-row { display: flex !important; gap: 14px !important; align-items: flex-start !important; margin-bottom: 8px !important; }
       .cur-select-wrap { flex: 1; }
-      .cur-label { color: #888 !important; font-size: 9px !important; }
+      .cur-label { color: #888 !important; font-size: 7.5px !important; }
       select {
         background: #f5f5f5 !important;
         border: 1px solid #ddd !important;
         color: #111 !important;
-        border-radius: 6px !important;
-        padding: 6px 10px !important;
-        font-size: 13px !important;
+        border-radius: 4px !important;
+        padding: 4px 7px !important;
+        font-size: 10px !important;
         width: 100% !important;
         appearance: auto !important;
         -webkit-appearance: auto !important;
       }
 
       /* Amount input */
-      .input-label { color: #888 !important; }
-      .input-group {
-        background: #f5f5f5 !important;
-        border: 1px solid #ddd !important;
-      }
-      .cur-tag { color: #555 !important; border-right-color: #ddd !important; background: #eee !important; }
-      input[type="number"] { color: #111 !important; font-size: 20px !important; }
-
-      /* Section titles */
-      .section-title { color: #888 !important; }
-      .divider { border-color: #eee !important; }
+      .input-label { color: #888 !important; font-size: 7.5px !important; margin-bottom: 4px !important; }
+      .input-group { background: #f5f5f5 !important; border: 1px solid #ddd !important; border-radius: 5px !important; }
+      .cur-tag { color: #555 !important; border-right-color: #ddd !important; background: #eee !important; font-size: 9px !important; line-height: 30px !important; min-width: 40px !important; padding: 0 9px !important; }
+      input[type="number"] { color: #111 !important; font-size: 14px !important; padding: 5px 9px !important; }
 
       /* Breakdown */
       .breakdown { display: block !important; }
-      .breakdown-row { border-bottom-color: #eee !important; padding: 10px 16px !important; }
-      .b-label { color: #555 !important; }
-      .b-val { color: #111 !important; }
+      .breakdown-row { border-bottom-color: #eee !important; padding: 5px 11px !important; }
+      .b-label { color: #555 !important; font-size: 9px !important; }
+      .b-val { color: #111 !important; font-size: 9px !important; }
       .b-val.red { color: #cc0000 !important; }
       .b-val.orange { color: #cc6600 !important; }
 
       /* Result card */
-      .result-card {
-        background: #f9fff5 !important;
-        border: 2px solid #4a9e4a !important;
-      }
-      .result-label { color: #4a9e4a !important; opacity: 1 !important; }
-      .result-amount { color: #2d7a2d !important; font-size: 28px !important; }
+      .result-card { background: #f9fff5 !important; border: 1.5px solid #4a9e4a !important; }
+      .result-label { color: #4a9e4a !important; opacity: 1 !important; font-size: 7.5px !important; margin-bottom: 3px !important; }
+      .result-amount { color: #2d7a2d !important; font-size: 20px !important; }
       .result-amount.placeholder { display: none !important; }
-      .result-sub { color: #666 !important; }
-      .flag { font-size: 20px !important; }
-      .to-code { color: #555 !important; }
+      .result-sub { color: #666 !important; font-size: 8px !important; }
+      .flag { font-size: 15px !important; }
+      .to-code { color: #555 !important; font-size: 8px !important; }
     }
   </style>
 </head>
@@ -783,6 +783,11 @@
       }
       calculate();
     }));
+
+    // Hide top currency boxes in print when there is no conversion (From == To)
+    window.addEventListener('beforeprint', () => {
+      document.body.classList.toggle('no-convert', fromCur.value === toCur.value);
+    });
 
     // Set print date
     document.getElementById('printDate').textContent =
