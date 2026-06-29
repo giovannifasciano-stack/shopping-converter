@@ -697,6 +697,9 @@
       document.getElementById('taxBlock').classList.toggle('show', isUSDUSD);
       document.getElementById('vatSection').style.display = isUSDUSD ? 'none' : 'block';
 
+      // Same currency on both sides → preset the Fixed-discount currency to match
+      if (fromCur.value === toCur.value) { fixDiscCur.value = fromCur.value; }
+
       if (isUSDUSD && vatOn) {
         vatOn = false;
         document.getElementById('vatSwitch').classList.remove('on');
