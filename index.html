@@ -1,1304 +1,1032 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Watch Trading</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Outfit:wght@800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shopping Converter</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Outfit:wght@700;900&display=swap" rel="stylesheet" />
   <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{
-      --bg:#03061a;--surface:#080e2e;--surface2:#0d1540;--surface3:#121c52;
-      --border:rgba(255,255,255,0.35);--border2:rgba(255,255,255,0.55);
-      --accent:#d4b982;--adim:rgba(212,185,130,0.12);--adim2:rgba(212,185,130,0.06);
-      --text:#f0ede6;--muted:#8a8a9a;--dim:#3a3a5a;
-      --red:#e8856a;--orange:#e8b56a;--green:#c8f5a0;--blue:#7ab0d4;
-      --mono:'DM Mono',monospace;
-    }
-    body{background:var(--bg);color:var(--text);font-family:var(--mono);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1rem;position:relative;overflow-x:hidden}
-    .watch-bg{position:fixed;right:-80px;top:50%;transform:translateY(-50%);width:500px;height:500px;opacity:0.04;pointer-events:none;z-index:0}
-    body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(212,185,130,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(212,185,130,0.02) 1px,transparent 1px);background-size:32px 32px;pointer-events:none;z-index:0}
-    .wrap{position:relative;z-index:1;width:100%;max-width:460px}
-    .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;margin-bottom:.6rem;position:relative;overflow:hidden}
-    .card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0.4}
-    .eye{font-size:9px;letter-spacing:0.22em;text-transform:uppercase;color:var(--accent);opacity:0.5;margin-bottom:.4rem;display:block}
-    h1{font-family:'Outfit',sans-serif;font-size:22px;font-weight:900;letter-spacing:-0.01em;line-height:1.2}
-    h1 span{color:var(--accent)}
-    .ilabel{font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent);opacity:0.7;margin-bottom:6px;display:block}
-    .clabel{font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--dim)}
-    .igroup{display:flex;align-items:center;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;overflow:hidden;transition:border-color .2s,box-shadow .2s}
-    .igroup:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px rgba(212,185,130,.07)}
-    .ctag{font-size:11px;color:var(--muted);padding:0 12px;border-right:1px solid var(--border);line-height:50px;background:rgba(212,185,130,.03);min-width:54px;text-align:center;white-space:nowrap}
-    .ctag.r{border-right:none;border-left:1px solid var(--border);min-width:auto}
-    input[type=number]{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:var(--mono);font-size:22px;font-weight:300;padding:12px 14px;width:100%;-moz-appearance:textfield}
-    input[type=number].sm{font-size:15px;padding:9px 12px}
-    input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
-    input[type=number]::placeholder{color:var(--dim)}
-    input[type=text]{flex:1;background:transparent;border:none;outline:none;color:var(--muted);font-family:var(--mono);font-size:13px;padding:9px 12px;width:100%}
-    input[type=text]::placeholder{color:var(--dim);font-style:italic}
-    .div{border:none;border-top:1px solid var(--border);margin:1.25rem 0}
-    .sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
-    .st{font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--muted)}
-    .sw-wrap{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
-    .sw-lbl{font-size:11px;color:var(--muted)}
-    .sw{width:36px;height:20px;background:var(--surface3);border:1px solid var(--border2);border-radius:10px;position:relative;transition:background .25s,border-color .25s;flex-shrink:0}
-    .sw.on{background:var(--accent);border-color:var(--accent)}
-    .sw::after{content:'';position:absolute;width:14px;height:14px;border-radius:50%;background:var(--dim);top:2px;left:2px;transition:left .25s,background .25s}
-    .sw.on::after{left:18px;background:var(--bg)}
-    .coll{overflow:hidden;max-height:0;opacity:0;transition:max-height .35s ease,opacity .3s ease,margin .3s ease}
-    .coll.open{max-height:800px;opacity:1;margin-top:.75rem}
-    .taxblock{overflow:hidden;max-height:0;opacity:0;transition:max-height .35s ease,opacity .3s ease}
-    .taxblock.show{max-height:700px;opacity:1}
-    .presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
-    .pb{font-size:11px;color:rgba(212,185,130,.6);background:rgba(212,185,130,.06);border:1px solid rgba(212,185,130,.2);border-radius:6px;padding:6px 10px;cursor:pointer;transition:all .15s;white-space:nowrap}
-    .pb:hover,.pb.on{background:var(--adim);color:var(--accent);border-color:rgba(212,185,130,.5)}
-    .crow2{display:flex;align-items:center;gap:8px}
-    .siw{display:flex;align-items:center;background:var(--surface2);border:1px solid var(--border2);border-radius:8px;overflow:hidden;flex:1}
-    .siw:focus-within{border-color:var(--accent)}
-    /* Lang toggle */
-    .langtog{display:flex;border:1px solid rgba(212,185,130,.3);border-radius:7px;overflow:hidden;flex-shrink:0}
-    .lt{font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:rgba(212,185,130,.55);background:transparent;border:none;padding:4px 9px;cursor:pointer;transition:all .15s}
-    .lt.on{background:var(--adim);color:var(--accent)}
-    .lt:not(.on):hover{color:var(--accent)}
-    .ver-pill{font-size:9px;letter-spacing:.04em;color:var(--accent);border:1px solid rgba(212,185,130,.4);border-radius:5px;padding:1px 6px;opacity:.85;line-height:1.5;white-space:nowrap}
-    .oa-dir{display:flex;align-items:center;gap:11px;margin-bottom:12px}
-    .oa-sw{width:50px;height:26px;border-radius:13px;position:relative;cursor:pointer;flex-shrink:0;border:1px solid var(--border2);background:rgba(232,133,106,.25);transition:background .25s}
-    .oa-sw::after{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:var(--text);top:2px;left:2px;transition:left .25s}
-    .oa-sw.credit{background:rgba(200,245,160,.25)}
-    .oa-sw.credit::after{left:28px}
-    .oa-dir-lbl{font-size:14px;font-weight:600;letter-spacing:.02em;color:var(--red)}
-    .oa-dir-hint{font-size:10px;color:var(--dim);margin-top:1px}
-    /* Product rows */
-    .prod-row{display:flex;align-items:center;gap:6px;margin-bottom:8px;position:relative;padding-right:18px}
-    .prod-cur{width:68px;font-size:11px;padding:7px 18px 7px 7px;flex-shrink:0}
-    .prod-amt{width:108px;flex-shrink:0}
-    .prod-amt input{font-size:14px;padding:8px 10px}
-    .prod-model{flex:1}
-    .prod-del{position:absolute;right:-4px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:2px 4px;opacity:0.6;transition:opacity .15s}
-    .prod-del:hover{opacity:1}
-    .prod-group{margin-bottom:.2rem}
-    .prod-group + .prod-group{border-top:1px solid var(--border);padding-top:.7rem;margin-top:.7rem}
-    /* Product photo */
-    .pphoto{position:relative;width:40px;height:40px;flex-shrink:0;border:1px dashed rgba(212,185,130,.5);border-radius:8px;background:rgba(212,185,130,.06);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer}
-    .pphoto-ph{font-size:16px;opacity:.6}
-    .pphoto-img{width:100%;height:100%;object-fit:cover;display:block}
-    .pphoto-rm{position:absolute;top:1px;right:1px;width:15px;height:15px;border-radius:50%;border:none;background:rgba(0,0,0,.65);color:#fff;font-size:9px;line-height:1;cursor:pointer;padding:0}
-    /* Payment copy upload (deposit) */
-    .ppay-row{display:flex;align-items:center;gap:10px;margin-top:9px;padding-top:9px;border-top:1px solid rgba(120,220,160,.18)}
-    .ppay-thumb{position:relative;width:42px;height:42px;flex-shrink:0;border:1px dashed rgba(120,220,160,.5);border-radius:8px;background:rgba(60,200,120,.06);display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer}
-    .ppay-thumb .ppay-ph{font-size:15px;opacity:.6}
-    .ppay-thumb .ppay-img{width:100%;height:100%;object-fit:cover;display:block}
-    .ppay-rm{position:absolute;top:1px;right:1px;width:15px;height:15px;border-radius:50%;border:none;background:rgba(0,0,0,.65);color:#fff;font-size:9px;line-height:1;cursor:pointer;padding:0}
-    .ppay-btn{font-family:inherit;font-size:10px;letter-spacing:.03em;padding:7px 11px;border:1px solid rgba(120,220,160,.45);border-radius:7px;background:rgba(60,200,120,.08);color:var(--green);cursor:pointer}
-    .pdep-sw.on{background:var(--green);border-color:var(--green)}
-    .add-btn{font-family:var(--mono);font-size:11px;color:var(--accent);background:var(--adim);border:1px solid rgba(212,185,130,.3);border-radius:8px;padding:7px 14px;cursor:pointer;transition:all .15s;margin-top:4px}
-    .add-btn:hover{background:rgba(212,185,130,.2)}
-    /* Adj rows */
-    .adj-row{display:flex;align-items:center;gap:6px;margin-bottom:10px}
-    .adj-lbl{font-size:9px;letter-spacing:.1em;text-transform:uppercase;min-width:72px;flex-shrink:0;color:var(--red)}
-    .adj-cur{width:68px;font-size:11px;padding:7px 18px 7px 7px;flex-shrink:0}
-    .adj-amt{width:108px;flex-shrink:0}
-    .adj-amt input{font-size:14px;padding:8px 10px}
-    .adj-model{flex:1}
-    .note{font-size:10px;color:var(--dim);white-space:nowrap}
-    .capnote{font-size:10px;color:var(--orange);white-space:nowrap;display:none}
-    /* Breakdown */
-    .bcard{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:.6rem;display:none;position:relative}
-    .bcard::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0.3}
-    .br{display:flex;justify-content:space-between;align-items:center;padding:.75rem 1.5rem;border-bottom:1px solid var(--border)}
-    .br:last-child{border-bottom:none}
-    .bl{font-size:12px;color:var(--muted)}
-    .bv{font-size:13px;color:var(--text)}
-    .bv.red{color:var(--red)}.bv.ora{color:var(--orange)}.bv.grn{color:var(--green)}.bv.blu{color:var(--blue)}
-    /* Result */
-    .res{background:var(--adim2);border:1px solid var(--border2);border-radius:16px;padding:1.4rem 1.5rem;margin-bottom:.6rem;display:flex;justify-content:space-between;align-items:center;position:relative;overflow:hidden}
-    .res::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:0.6}
-    .rlbl{font-size:9px;letter-spacing:0.16em;text-transform:uppercase;color:var(--accent);opacity:.7;margin-bottom:5px}
-    .ramt{font-size:34px;font-weight:300;color:var(--accent);letter-spacing:-0.02em}
-    .ramt.ph{opacity:.1}
-    .fwrap{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
-    .flag{font-size:26px;line-height:1}
-    .tcode{font-size:11px;color:var(--muted)}
-    .cpbtn{font-size:11px;color:var(--muted);background:var(--surface3);border:1px solid var(--border2);border-radius:8px;padding:6px 10px;cursor:pointer;transition:all .15s;margin-top:6px}
-    .cpbtn:hover,.cpbtn.ok{background:var(--adim);color:var(--accent)}
-    .abar{display:flex;gap:8px;margin-bottom:.6rem}
-    .pbtn{flex:1;font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:rgba(212,185,130,.7);background:rgba(212,185,130,.06);border:1px solid rgba(212,185,130,.25);border-radius:10px;padding:10px 16px;cursor:pointer;text-transform:uppercase;transition:all .2s}
-    .pbtn:hover{background:var(--adim);color:var(--accent)}
-    .rbar{display:flex;align-items:center;justify-content:space-between;padding:.5rem 0}
-    .rinfo{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--dim)}
-    .dot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;flex-shrink:0}
-    .dot.off{background:var(--dim);animation:none}
-    .rfbtn{font-size:10px;color:var(--dim);background:none;border:none;cursor:pointer;padding:2px 6px;font-family:var(--mono);transition:color .2s}
-    .rfbtn:hover{color:var(--accent)}
-    select{background:var(--surface2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:13px;padding:8px 28px 8px 10px;outline:none;cursor:pointer;width:100%;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238a8a9a' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;transition:border-color .2s}
-    select:focus{border-color:var(--accent)}
-    select option{background:#0d1540}
-    .crow{display:grid;grid-template-columns:1fr 40px 1fr;align-items:center;gap:8px;margin-bottom:1.25rem}
-    .csel{display:flex;flex-direction:column;gap:4px}
-    .swap{width:40px;height:40px;border-radius:50%;background:var(--surface3);border:1px solid var(--border2);color:var(--muted);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;margin-top:16px;flex-shrink:0}
-    .swap:hover{background:var(--adim);color:var(--accent)}
-    .swap.spin{transform:rotate(180deg)}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ===== In-page print sheet (modern) ===== */
-    #printSheet{display:none;font-family:'Plus Jakarta Sans',sans-serif;max-width:620px;margin:0 auto;color:#1a1a1f}
-    #printSheet *{box-sizing:border-box}
-    #printSheet .ps-top{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:14px;border-bottom:1px solid #ececec}
-    #printSheet .ps-eyebrow{font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:#a08948;margin-bottom:5px}
-    #printSheet .ps-brand{font-family:'Outfit',sans-serif;font-size:18px;font-weight:900;letter-spacing:-.01em;color:#15161b;line-height:1}
-    #printSheet .ps-brand b{color:#b8942a}
-    #printSheet .ps-vpill{display:inline-block;font-size:7px;letter-spacing:.02em;color:#999;border:1px solid #ddd;border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:middle}
-    #printSheet .ps-ord{text-align:right}
-    #printSheet .ps-ord-lbl{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:#aaa;margin-bottom:3px}
-    #printSheet .ps-ord-no{font-family:'Sora',sans-serif;font-size:15px;font-weight:800;color:#15161b;font-variant-numeric:tabular-nums}
-    #printSheet .ps-ord-date{font-size:10px;color:#888;margin-top:3px}
-    #printSheet .ps-goldline{height:2px;background:linear-gradient(90deg,#d4b982,#b8942a 40%,transparent);margin:14px 0 18px;border-radius:2px}
-    #printSheet .ps-parties{display:flex;gap:14px;margin-bottom:24px}
-    #printSheet .ps-party{flex:1;border:1px solid #e6e6e6;border-radius:9px;padding:13px 15px;background:#fcfbf9}
-    #printSheet .ps-party-lbl{font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:#b8942a;margin-bottom:7px;font-weight:600;padding-bottom:6px;border-bottom:1px solid #efe9da}
-    #printSheet .ps-party-name{font-size:13px;font-weight:600;color:#15161b;margin-bottom:2px}
-    #printSheet .ps-party-line{font-size:11px;color:#666;line-height:1.5}
-    #printSheet .ps-seclbl{font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:#999;margin-bottom:8px}
-    #printSheet .ps-items{width:100%;border-collapse:collapse;margin-bottom:20px}
-    #printSheet .ps-items th{font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:#aaa;font-weight:600;text-align:left;padding:0 0 7px;border-bottom:1px solid #ececec}
-    #printSheet .ps-items th.r{text-align:right}
-    #printSheet .ps-items td{padding:9px 0;border-bottom:1px solid #f2f2f2;vertical-align:middle}
-    #printSheet .ps-items td.thumb{width:46px}
-    #printSheet .ps-items td.thumb img{width:38px;height:38px;border-radius:5px;object-fit:cover;border:1px solid #e4e4e4;display:block}
-    #printSheet .ps-it-name{font-size:12px;color:#222;font-weight:500}
-    #printSheet .ps-it-sub{font-size:10px;color:#c0392b;margin-top:1px}
-    #printSheet .ps-it-amt{font-size:12px;color:#15161b;text-align:right;font-weight:600;white-space:nowrap;font-variant-numeric:tabular-nums}
-    #printSheet .ps-it-amt s{color:#bbb;font-weight:400;margin-left:5px}
-    #printSheet .ps-summary{margin-left:auto;width:calc(66% + 2cm);margin-bottom:22px}
-    #printSheet .ps-srow{display:flex;justify-content:space-between;align-items:center;padding:5px 0;font-size:11px;gap:10px}
-    #printSheet .ps-srow .k{color:#777;display:flex;align-items:center;gap:7px}
-    #printSheet .ps-srow .k img{width:26px;height:26px;border-radius:4px;object-fit:cover;border:1px solid #e2e2e2}
-    #printSheet .ps-srow .v{color:#222;font-variant-numeric:tabular-nums;white-space:nowrap}
-    #printSheet .ps-srow.bold .k,#printSheet .ps-srow.bold .v{color:#111;font-weight:700}
-    #printSheet .ps-srow .v.red{color:#c0392b}
-    #printSheet .ps-srow .v.grn{color:#1f8a4c}
-    #printSheet .ps-srow .v.blu{color:#0668c7}
-    #printSheet .ps-srow .v.ora{color:#c66a00}
-    #printSheet .ps-total{display:flex;justify-content:space-between;align-items:flex-end;padding-top:14px;margin-bottom:20px;border-top:2px solid #1a1a1f}
-    #printSheet .ps-total-lbl{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#a8862e;font-weight:600;margin-bottom:4px}
-    #printSheet .ps-total-amt{font-family:'Sora',sans-serif;font-size:25px;font-weight:800;color:#9a7d2e;letter-spacing:-.01em;line-height:1;text-align:right;font-variant-numeric:tabular-nums}
-    #printSheet .ps-total-cur{font-size:10px;color:#999;margin-top:5px;text-align:right;letter-spacing:.06em}
-    #printSheet .ps-total-flag{font-size:13px;vertical-align:middle;margin-right:3px}
-    #printSheet .ps-foot{display:flex;justify-content:flex-start;align-items:center;padding-top:12px;border-top:1px solid #ececec;font-size:9px;color:#b3b3b3;letter-spacing:.02em}
-    #printSheet .ps-pay{margin:18px 0 6px}
-    #printSheet .ps-pay-lbl{font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:#a8862e;font-weight:600;margin-bottom:7px}
-    #printSheet .ps-pay-list{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-start}
-    #printSheet .ps-pay-item{width:6cm}
-    #printSheet .ps-pay-box{width:6cm;height:6cm;border:1px solid #d9c790;border-radius:6px;background:#fcfaf3;display:flex;align-items:center;justify-content:center;overflow:hidden}
-    #printSheet .ps-pay-box img{max-width:100%;max-height:100%;object-fit:contain;display:block}
-    #printSheet .ps-pay-cap{font-size:9px;color:#888;margin-top:4px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    @media print{
-      @page{size:A4;margin:14mm}
-      *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-      html,body{background:#fff !important}
-      body{display:block !important;padding:0 !important;min-height:0 !important;align-items:flex-start !important;justify-content:flex-start !important}
-      .watch-bg,.wrap{display:none !important}
-      #printSheet{display:block !important}
+    :root {
+      --bg: #03061a;
+      --surface: #080e2e;
+      --surface2: #0d1540;
+      --surface3: #121c52;
+      --border: rgba(255,255,255,0.4);
+      --border2: rgba(255,255,255,0.6);
+      --accent: #7eb8f7;
+      --accent-dim: rgba(126,184,247,0.12);
+      --accent-dim2: rgba(126,184,247,0.06);
+      --text: #f0f2f0;
+      --text-muted: #7a8a7e;
+      --text-dim: #4a5a4e;
+      --red: #f5a0a0;
+      --orange: #f5d0a0;
+      --mono: 'DM Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(126,184,247,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(126,184,247,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper { position: relative; z-index: 1; width: 100%; max-width: 460px; }
+
+    header { margin-bottom: 2rem; }
+
+    .eyebrow {
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--accent);
+      opacity: 0.6;
+      margin-bottom: 0.35rem;
+    }
+    .ver-pill {
+      display: inline-block;
+      text-transform: none;
+      letter-spacing: 0.02em;
+      font-size: 9px;
+      color: var(--accent);
+      border: 1px solid rgba(126,184,247,0.4);
+      border-radius: 5px;
+      padding: 1px 5px;
+      margin-left: 6px;
+      vertical-align: middle;
+      opacity: 0.9;
+    }
+
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 17.6px;
+      font-weight: 900;
+      color: var(--text);
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+      text-transform: uppercase;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 1.5rem;
+      margin-bottom: 0.6rem;
+      animation: fadeUp 0.4s ease both;
+    }
+    .head-card { padding: 1.2rem 1.5rem; }
+
+    .currency-row {
+      display: grid;
+      grid-template-columns: 1fr 40px 1fr;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 1.25rem;
+    }
+
+    .cur-select-wrap { display: flex; flex-direction: column; gap: 4px; }
+
+    .cur-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    select {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 13px;
+      padding: 8px 10px;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.2s;
+      width: 100%;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%237a8a7e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 28px;
+    }
+
+    select:focus { border-color: var(--accent); }
+    select option { background: #1e2221; }
+
+    .swap-btn {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--surface3); border: 1px solid var(--border2);
+      color: var(--text-muted); font-size: 16px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s, color 0.2s, transform 0.3s;
+      margin-top: 16px; flex-shrink: 0;
+    }
+    .swap-btn:hover { background: var(--accent-dim); color: var(--accent); }
+    .swap-btn.spinning { transform: rotate(180deg); }
+
+    .input-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .input-group {
+      display: flex; align-items: center;
+      background: var(--surface2); border: 1px solid var(--border2);
+      border-radius: 10px; overflow: hidden;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-group:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(200,245,160,0.07);
+    }
+
+    .cur-tag {
+      font-family: var(--mono); font-size: 11px; color: var(--text-muted);
+      padding: 0 12px; white-space: nowrap; border-right: 1px solid var(--border);
+      line-height: 50px; background: rgba(255,255,255,0.02);
+      min-width: 54px; text-align: center;
+    }
+    .cur-tag.right { border-right: none; border-left: 1px solid var(--border); min-width: auto; }
+
+    input[type="number"] {
+      flex: 1; background: transparent; border: none; outline: none;
+      color: var(--text); font-family: var(--mono); font-size: 22px; font-weight: 300;
+      padding: 12px 14px; width: 100%; -moz-appearance: textfield;
+    }
+    input[type="number"].sm { font-size: 16px; padding: 9px 12px; }
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    input[type="number"]::placeholder { color: var(--text-dim); }
+
+    .divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+    .section-title {
+      font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--text-dim);
+    }
+
+    .switch-wrap { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .switch-label { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+    .switch {
+      width: 36px; height: 20px; background: var(--surface3);
+      border: 1px solid var(--border2); border-radius: 10px;
+      position: relative; transition: background 0.25s, border-color 0.25s; flex-shrink: 0;
+    }
+    .switch.on { background: var(--accent); border-color: var(--accent); }
+    .switch::after {
+      content: ''; position: absolute; width: 14px; height: 14px; border-radius: 50%;
+      background: var(--text-dim); top: 2px; left: 2px;
+      transition: left 0.25s, background 0.25s;
+    }
+    .switch.on::after { left: 18px; background: var(--bg); }
+
+    .collapsible {
+      overflow: hidden; max-height: 0; opacity: 0;
+      transition: max-height 0.3s ease, opacity 0.3s ease, margin 0.3s ease;
+    }
+    .collapsible.visible { max-height: 120px; opacity: 1; margin-top: 0.75rem; }
+    #taxControls.visible { max-height: 480px; }
+    #discControls.visible { max-height: 240px; }
+    .fixdisc-row { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+    .fixdisc-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); white-space: nowrap; }
+    .fixdisc-cur { width: auto !important; flex: 0 0 auto; font-size: 12px; padding: 7px 24px 7px 9px; }
+    .fixdisc-amt { flex: 1; }
+
+    .taxblock { overflow: hidden; max-height: 0; opacity: 0; transition: max-height 0.3s ease, opacity 0.3s ease; }
+    .taxblock.show { max-height: 720px; opacity: 1; }
+
+    .sub-label { font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-dim); margin-bottom: 5px; }
+    .note { font-family: var(--mono); font-size: 10px; color: var(--text-dim); white-space: nowrap; }
+    .capnote { font-family: var(--mono); font-size: 10px; color: var(--orange); white-space: nowrap; display: none; }
+    .b-val.blue { color: #7eb8f7; }
+
+    .controls-row { display: flex; align-items: center; gap: 10px; }
+    .small-input-wrap {
+      display: flex; align-items: center; background: var(--surface2);
+      border: 1px solid var(--border2); border-radius: 8px; overflow: hidden;
+      flex: 1; transition: border-color 0.2s;
+    }
+    .small-input-wrap:focus-within { border-color: var(--accent); }
+
+    .presets { display: flex; gap: 6px; flex-wrap: wrap; }
+    .preset-btn {
+      font-family: var(--mono); font-size: 11px; color: var(--text-muted);
+      background: var(--surface3); border: 1px solid var(--border2);
+      border-radius: 6px; padding: 6px 10px; cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s; white-space: nowrap;
+    }
+    .preset-btn:hover, .preset-btn.active { background: var(--accent-dim); color: var(--accent);         border-color: rgba(126,184,247,0.25); }
+
+    .breakdown {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 18px; overflow: hidden; margin-bottom: 0.6rem;
+      animation: fadeUp 0.4s ease 0.08s both;
+    }
+    .breakdown-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.8rem 1.5rem; border-bottom: 1px solid var(--border);
+    }
+    .breakdown-row:last-child { border-bottom: none; }
+    .b-label { font-size: 12px; color: var(--text-muted); font-family: var(--mono); letter-spacing: 0.03em; }
+    .b-val { font-family: var(--mono); font-size: 13px; color: var(--text); }
+    .b-val.red { color: var(--red); }
+    .b-val.orange { color: var(--orange); }
+
+    .result-card {
+      background: var(--accent-dim2); border: 1px solid rgba(200,245,160,0.13);
+      border-radius: 18px; padding: 1.4rem 1.5rem; margin-bottom: 0.6rem;
+      display: flex; justify-content: space-between; align-items: center;
+      animation: fadeUp 0.4s ease 0.14s both;
+    }
+    .result-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); opacity: 0.6; margin-bottom: 5px; }
+    .result-amount { font-family: var(--mono); font-size: 34px; font-weight: 300; color: #c8f5a0; letter-spacing: -0.02em; }
+    .result-amount.placeholder { opacity: 0.15; }
+    .result-sub { font-family: var(--mono); font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .flag-wrap { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+
+    .copy-btn {
+      font-family: var(--mono); font-size: 11px; color: var(--text-muted);
+      background: var(--surface3); border: 1px solid var(--border2);
+      border-radius: 8px; padding: 6px 10px; cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      margin-top: 6px; letter-spacing: 0.05em;
+    }
+    .copy-btn:hover { background: var(--accent-dim); color: var(--accent); border-color: rgba(126,184,247,0.25); }
+    .copy-btn.copied { background: var(--accent-dim); color: var(--accent); border-color: rgba(126,184,247,0.25); }
+    .flag { font-size: 26px; line-height: 1; }
+    .to-code { font-family: var(--mono); font-size: 11px; color: var(--text-muted); letter-spacing: 0.08em; }
+
+    .rate-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.5rem 0; animation: fadeUp 0.4s ease 0.2s both;
+    }
+    .rate-info { display: flex; align-items: center; gap: 6px; font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
+    .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; flex-shrink: 0; }
+    .live-dot.loading { background: var(--text-dim); animation: none; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+    .refresh-btn { font-family: var(--mono); font-size: 11px; color: var(--text-dim); background: none; border: none; cursor: pointer; padding: 2px 6px; border-radius: 4px; transition: color 0.2s; letter-spacing: 0.05em; }
+    .refresh-btn:hover { color: var(--accent); }
+
+    .action-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 0.6rem;
+      animation: fadeUp 0.4s ease 0.22s both;
+    }
+    .print-btn {
+      flex: 1;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.8);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 10px;
+      padding: 10px 16px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+      text-transform: uppercase;
+    }
+    .print-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+    .print-date { display: none; }
+
+    @media print {
+      @page { size: A4; margin: 10mm; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      html { height: auto !important; }
+      body {
+        background: #fff !important;
+        padding: 0 !important;
+        display: block !important;
+        min-height: 0 !important;
+        height: auto !important;
+        align-items: flex-start !important;
+        justify-content: flex-start !important;
+      }
+      body::before { display: none !important; }
+      .wrapper { max-width: 100% !important; margin: 0 !important; }
+
+      /* Hide interactive / non-essential elements */
+      .action-bar, .rate-bar, .swap-btn,
+      .collapsible, .section-header, .divider,
+      .copy-btn, #copyField { display: none !important; }
+
+      /* No conversion (From == To) → hide the currency boxes up top */
+      body.no-convert .currency-row { display: none !important; }
+
+      /* Keep each card whole, no splitting across pages */
+      .card, .breakdown, .result-card { break-inside: avoid; page-break-inside: avoid; }
+
+      /* Header */
+      .head-card { padding: 8px 11px !important; }
+      h1 { color: #111 !important; font-size: 12px !important; }
+      .eyebrow { color: #888 !important; opacity: 1 !important; font-size: 8px !important; margin-bottom: 2px !important; }
+      .ver-pill { color: #888 !important; border-color: #ccc !important; font-size: 8px !important; }
+      .print-date { display: block; font-family: var(--mono); font-size: 8px; color: #888; margin-top: 2px; }
+
+      /* Cards */
+      .card, .breakdown, .result-card {
+        background: #fff !important;
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+        border-radius: 6px !important;
+        margin-bottom: 6px !important;
+        padding: 9px 12px !important;
+      }
+      .breakdown { padding: 0 !important; }
+
+      /* Currency selectors — show as plain text */
+      .currency-row { display: flex !important; gap: 14px !important; align-items: flex-start !important; margin-bottom: 8px !important; }
+      .cur-select-wrap { flex: 1; }
+      .cur-label { color: #888 !important; font-size: 7.5px !important; }
+      select {
+        background: #f5f5f5 !important;
+        border: 1px solid #ddd !important;
+        color: #111 !important;
+        border-radius: 4px !important;
+        padding: 4px 7px !important;
+        font-size: 10px !important;
+        width: 100% !important;
+        appearance: auto !important;
+        -webkit-appearance: auto !important;
+      }
+
+      /* Amount input */
+      .input-label { color: #888 !important; font-size: 7.5px !important; margin-bottom: 4px !important; }
+      .input-group { background: #f5f5f5 !important; border: 1px solid #ddd !important; border-radius: 5px !important; }
+      .cur-tag { color: #555 !important; border-right-color: #ddd !important; background: #eee !important; font-size: 9px !important; line-height: 30px !important; min-width: 40px !important; padding: 0 9px !important; }
+      input[type="number"] { color: #111 !important; font-size: 14px !important; padding: 5px 9px !important; }
+
+      /* Breakdown */
+      .breakdown { display: block !important; }
+      .breakdown-row { border-bottom-color: #eee !important; padding: 5px 11px !important; }
+      .b-label { color: #555 !important; font-size: 9px !important; }
+      .b-val { color: #111 !important; font-size: 9px !important; }
+      .b-val.red { color: #cc0000 !important; }
+      .b-val.orange { color: #cc6600 !important; }
+      .b-val.blue { color: #1166cc !important; }
+
+      /* Result card */
+      .result-card { background: #f9fff5 !important; border: 1.5px solid #4a9e4a !important; }
+      .result-label { color: #4a9e4a !important; opacity: 1 !important; font-size: 7.5px !important; margin-bottom: 3px !important; }
+      .result-amount { color: #2d7a2d !important; font-size: 20px !important; }
+      .result-amount.placeholder { display: none !important; }
+      .result-sub { color: #666 !important; font-size: 8px !important; }
+      .flag { font-size: 15px !important; }
+      .to-code { color: #555 !important; font-size: 8px !important; }
     }
   </style>
 </head>
 <body>
-<svg class="watch-bg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-  <circle cx="200" cy="200" r="160" fill="none" stroke="white" stroke-width="6"/>
-  <circle cx="200" cy="200" r="145" fill="none" stroke="white" stroke-width="2"/>
-  <circle cx="200" cy="200" r="130" fill="none" stroke="white" stroke-width="1"/>
-  <line x1="200" y1="58" x2="200" y2="78" stroke="white" stroke-width="4" stroke-linecap="round"/>
-  <line x1="200" y1="322" x2="200" y2="342" stroke="white" stroke-width="4" stroke-linecap="round"/>
-  <line x1="58" y1="200" x2="78" y2="200" stroke="white" stroke-width="4" stroke-linecap="round"/>
-  <line x1="322" y1="200" x2="342" y2="200" stroke="white" stroke-width="4" stroke-linecap="round"/>
-  <line x1="113" y1="72" x2="121" y2="86" stroke="white" stroke-width="3" stroke-linecap="round"/>
-  <line x1="72" y1="113" x2="86" y2="121" stroke="white" stroke-width="3" stroke-linecap="round"/>
-  <line x1="287" y1="72" x2="279" y2="86" stroke="white" stroke-width="3" stroke-linecap="round"/>
-  <line x1="328" y1="113" x2="314" y2="121" stroke="white" stroke-width="3" stroke-linecap="round"/>
-  <line x1="113" y1="328" x2="121" y2="314" stroke="white" stroke-width="3" stroke-linecap="round"/>
-  <line x1="72" y1="287" x2="86" y2="279" stroke="white" stroke-width="3" stroke-linecap="round"/>
-  <line x1="287" y1="328" x2="279" y2="314" stroke="white" stroke-width="3" stroke-linecap="round"/>
-  <line x1="328" y1="287" x2="314" y2="279" stroke="white" stroke-width="3" stroke-linecap="round"/>
-  <line x1="200" y1="200" x2="200" y2="110" stroke="white" stroke-width="5" stroke-linecap="round"/>
-  <line x1="200" y1="200" x2="260" y2="150" stroke="white" stroke-width="3" stroke-linecap="round"/>
-  <line x1="200" y1="220" x2="200" y2="100" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-  <rect x="356" y="188" width="20" height="24" rx="4" fill="none" stroke="white" stroke-width="3"/>
-  <circle cx="200" cy="200" r="5" fill="white"/>
-</svg>
-
-<div class="wrap">
-
-  <!-- Header -->
-  <div class="card" style="margin-bottom:.6rem">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem">
-      <div style="display:flex;align-items:center;gap:7px;min-width:0">
-        <span class="eye" data-i18n="eyebrow" style="margin-bottom:0">Horology · Finance</span>
-        <span class="ver-pill" id="verPill">v1.0</span>
-      </div>
-      <div class="langtog" id="langTog">
-        <button class="lt" data-lang="it">ITA</button>
-        <button class="lt on" data-lang="en">ENG</button>
-      </div>
+  <div class="wrapper">
+    <div class="card head-card">
+      <p class="eyebrow">Shopping Tool<span class="ver-pill">v1.0</span></p>
+      <h1>Shopping <span style="color:var(--accent)">Converter</span></h1>
+      <p class="print-date" id="printDate"></p>
     </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
-      <h1>WATCH<span>DESK</span> <span>PRO</span></h1>
-      <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-        <span style="font-size:8.5px;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);opacity:0.55">base</span>
-        <select id="baseCur" style="width:auto;font-size:12px;padding:6px 22px 6px 8px;background-color:rgba(212,185,130,0.06);border:1px solid rgba(212,185,130,0.35);border-radius:7px;background-image:url(&quot;data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='6'%3E%3Cpath d='M1 1l3.5 3.5L8 1' stroke='%23d4b982' stroke-width='1.4' fill='none'/%3E%3C/svg%3E&quot;);background-position:right 8px center">
-          <option value="USD">🇺🇸 USD</option><option value="EUR" selected>🇪🇺 EUR</option><option value="CHF">🇨🇭 CHF</option><option value="GBP">🇬🇧 GBP</option><option value="JPY">🇯🇵 JPY</option><option value="CAD">🇨🇦 CAD</option><option value="AUD">🇦🇺 AUD</option><option value="CNY">🇨🇳 CNY</option><option value="AED">🇦🇪 AED</option><option value="HKD">🇭🇰 HKD</option>
-        </select>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:1rem">
-      <div>
-        <span class="ilabel" data-i18n="client">Client</span>
-        <div class="igroup" style="flex-direction:column;align-items:stretch;height:auto">
-          <input type="text" id="clientName" data-i18n-ph="ph_name" placeholder="name…" style="border-bottom:1px solid var(--border)"/>
-          <input type="text" id="clientAddr" data-i18n-ph="ph_addr" placeholder="address…" style="border-bottom:1px solid var(--border)"/>
-          <input type="text" id="clientCity" data-i18n-ph="ph_citystate" placeholder="city / state…" style="border-bottom:1px solid var(--border)"/>
-          <input type="text" id="clientCountry" data-i18n-ph="ph_country" placeholder="country…"/>
+
+    <div class="card">
+      <div class="currency-row">
+        <div class="cur-select-wrap">
+          <span class="cur-label">From</span>
+          <select id="fromCur">
+            <option value="EUR">🇪🇺 EUR — Euro</option>
+            <option value="CHF">🇨🇭 CHF — Swiss Franc</option>
+            <option value="USD">🇺🇸 USD — US Dollar</option>
+            <option value="GBP">🇬🇧 GBP — British Pound</option>
+            <option value="JPY">🇯🇵 JPY — Japanese Yen</option>
+            <option value="CAD">🇨🇦 CAD — Canadian Dollar</option>
+            <option value="AUD">🇦🇺 AUD — Australian Dollar</option>
+            <option value="CNY">🇨🇳 CNY — Chinese Yuan</option>
+            <option value="AED">🇦🇪 AED — UAE Dirham</option>
+            <option value="HKD">🇭🇰 HKD — Hong Kong Dollar</option>
+          </select>
+        </div>
+        <button class="swap-btn" id="swapBtn">⇄</button>
+        <div class="cur-select-wrap">
+          <span class="cur-label">To</span>
+          <select id="toCur">
+            <option value="EUR">🇪🇺 EUR — Euro</option>
+            <option value="CHF">🇨🇭 CHF — Swiss Franc</option>
+            <option value="USD">🇺🇸 USD — US Dollar</option>
+            <option value="GBP">🇬🇧 GBP — British Pound</option>
+            <option value="JPY">🇯🇵 JPY — Japanese Yen</option>
+            <option value="CAD">🇨🇦 CAD — Canadian Dollar</option>
+            <option value="AUD">🇦🇺 AUD — Australian Dollar</option>
+            <option value="CNY">🇨🇳 CNY — Chinese Yuan</option>
+            <option value="AED">🇦🇪 AED — UAE Dirham</option>
+            <option value="HKD">🇭🇰 HKD — Hong Kong Dollar</option>
+          </select>
         </div>
       </div>
-      <div>
-        <span class="ilabel" data-i18n="vendor">Vendor</span>
-        <div class="igroup" style="flex-direction:column;align-items:stretch;height:auto">
-          <input type="text" id="vendorName" data-i18n-ph="ph_name" placeholder="name…" style="border-bottom:1px solid var(--border)"/>
-          <input type="text" id="vendorAddr" data-i18n-ph="ph_addr" placeholder="address…" style="border-bottom:1px solid var(--border)"/>
-          <input type="text" id="vendorCity" data-i18n-ph="ph_citystate" placeholder="city / state…" style="border-bottom:1px solid var(--border)"/>
-          <input type="text" id="vendorCountry" data-i18n-ph="ph_country" placeholder="country…"/>
+
+      <span class="input-label">Amount</span>
+      <div class="input-group">
+        <span class="cur-tag" id="fromTag">EUR</span>
+        <input type="number" id="amountInput" placeholder="0.00" min="0" step="0.01" autofocus />
+      </div>
+
+      <hr class="divider" />
+
+      <!-- Discount -->
+      <div class="section-header">
+        <span class="section-title">Discount</span>
+        <div class="switch-wrap" id="discToggle">
+          <span class="switch-label" id="discLabel">off</span>
+          <div class="switch" id="discSwitch"></div>
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- Order -->
-  <div class="card" style="padding:0.8rem 1.25rem">
-    <div style="display:grid;grid-template-columns:1fr 1.15fr;gap:10px;align-items:end">
-      <div>
-        <span class="ilabel" data-i18n="orderNo" style="margin-bottom:4px">Order no.</span>
-        <div class="igroup"><input type="text" id="orderNo" data-i18n-ph="ph_orderNo" placeholder="#0001" style="color:var(--text);font-size:14px;padding:7px 11px"/></div>
-      </div>
-      <div>
-        <span class="ilabel" data-i18n="orderDate" style="margin-bottom:4px">Order date</span>
-        <div class="igroup"><input type="date" id="orderDate" style="flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:var(--mono);font-size:14px;font-weight:300;padding:7px 11px;width:100%;color-scheme:dark"/></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Main card -->
-  <div class="card">
-
-    <!-- Currency -->
-    <div class="crow">
-      <div class="csel">
-        <span class="clabel" data-i18n="from">From</span>
-        <select id="fromCur">
-          <option value="USD">🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option>
-          <option value="CHF">🇨🇭 CHF</option><option value="GBP">🇬🇧 GBP</option>
-          <option value="JPY">🇯🇵 JPY</option><option value="CAD">🇨🇦 CAD</option>
-          <option value="AUD">🇦🇺 AUD</option><option value="CNY">🇨🇳 CNY</option>
-          <option value="AED">🇦🇪 AED</option><option value="HKD">🇭🇰 HKD</option>
-        </select>
-      </div>
-      <button class="swap" id="swapBtn">⇄</button>
-      <div class="csel">
-        <span class="clabel" data-i18n="to">To</span>
-        <select id="toCur">
-          <option value="USD">🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option>
-          <option value="CHF">🇨🇭 CHF</option><option value="GBP">🇬🇧 GBP</option>
-          <option value="JPY">🇯🇵 JPY</option><option value="CAD">🇨🇦 CAD</option>
-          <option value="AUD">🇦🇺 AUD</option><option value="CNY">🇨🇳 CNY</option>
-          <option value="AED">🇦🇪 AED</option><option value="HKD">🇭🇰 HKD</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Products -->
-    <div class="sh"><span class="st" data-i18n="products">New Product(s)</span></div>
-    <div id="prodList"></div>
-    <button class="add-btn" data-i18n="addProduct" onclick="addProduct()">+ Add product</button>
-
-    <div class="div"></div>
-
-    <!-- Trade-ins -->
-    <div class="sh">
-      <span class="st" data-i18n="tradeins">Trade-in(s)</span>
-      <div class="sw-wrap" id="tradeToggle"><span class="sw-lbl" id="tradeLbl">off</span><div class="sw" id="tradeSw"></div></div>
-    </div>
-    <div class="coll" id="tradeColl">
-      <div id="tradeList"></div>
-      <button class="add-btn" data-i18n="addTrade" onclick="addTradeIn()">+ Add trade-in</button>
-    </div>
-
-    <div class="div"></div>
-
-    <!-- Open Account Balance -->
-    <div class="sh">
-      <span class="st" data-i18n="openBal">Open Account Balance</span>
-      <div class="sw-wrap" id="oaToggle"><span class="sw-lbl" id="oaLbl">off</span><div class="sw" id="oaSw"></div></div>
-    </div>
-    <div class="coll" id="oaColl">
-      <div class="oa-dir">
-        <div class="oa-sw" id="oaDirSw"></div>
-        <div>
-          <div class="oa-dir-lbl" id="oaDirLbl">Debit</div>
-          <div class="oa-dir-hint" id="oaDirHint"></div>
+      <div class="collapsible" id="discControls">
+        <div class="controls-row">
+          <div class="small-input-wrap">
+            <input type="number" class="sm" id="discRate" placeholder="0" min="0" max="100" step="0.1" />
+            <span class="cur-tag right">%</span>
+          </div>
+          <div class="presets">
+            <button class="preset-btn disc-preset" data-pct="5">5%</button>
+            <button class="preset-btn disc-preset" data-pct="10">10%</button>
+            <button class="preset-btn disc-preset" data-pct="15">15%</button>
+            <button class="preset-btn disc-preset" data-pct="20">20%</button>
+            <button class="preset-btn disc-preset" data-pct="30">30%</button>
+            <button class="preset-btn disc-preset" data-pct="50">50%</button>
+          </div>
+        </div>
+        <div class="fixdisc-row">
+          <span class="fixdisc-label">Fixed</span>
+          <select id="fixDiscCur" class="fixdisc-cur">
+            <option value="EUR">🇪🇺 EUR</option><option value="CHF">🇨🇭 CHF</option><option value="USD">🇺🇸 USD</option><option value="GBP">🇬🇧 GBP</option><option value="JPY">🇯🇵 JPY</option><option value="CAD">🇨🇦 CAD</option><option value="AUD">🇦🇺 AUD</option><option value="CNY">🇨🇳 CNY</option><option value="AED">🇦🇪 AED</option><option value="HKD">🇭🇰 HKD</option>
+          </select>
+          <div class="small-input-wrap fixdisc-amt">
+            <input type="number" class="sm" id="fixDiscVal" placeholder="0.00" min="0" step="0.01" />
+          </div>
         </div>
       </div>
-      <div class="adj-row" style="margin-bottom:0">
-        <select class="adj-cur" id="oacur"><option value="USD">🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option><option value="CHF">🇨🇭 CHF</option><option value="GBP">🇬🇧 GBP</option><option value="JPY">🇯🇵 JPY</option><option value="CAD">🇨🇦 CAD</option><option value="AUD">🇦🇺 AUD</option><option value="CNY">🇨🇳 CNY</option><option value="AED">🇦🇪 AED</option><option value="HKD">🇭🇰 HKD</option></select>
-        <div class="adj-amt igroup" id="oacgroup"><input type="number" id="oacval" placeholder="0.00" min="0" step="0.01"/></div>
-        <div class="adj-model igroup"><input type="text" id="oacmodel" data-i18n-ph="ph_note" placeholder="note…"/></div>
-      </div>
-    </div>
 
-    <!-- US Sales Tax -->
-    <div class="taxblock" id="taxBlock">
-      <div class="div"></div>
-      <div class="sh">
-        <span class="st" data-i18n="salesTax">🇺🇸 US Sales Tax</span>
-        <div class="sw-wrap" id="taxToggle"><span class="sw-lbl" id="taxLbl">off</span><div class="sw" id="taxSw"></div></div>
-      </div>
-      <div class="coll" id="taxColl">
-        <div data-i18n="state" style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:5px">State</div>
-        <select id="stateSel" style="margin-bottom:10px">
-          <option value="" data-i18n="ph_state">Select state…</option>
-          <option value="4.0" data-state="AL">Alabama (AL) — 4%</option>
-          <option value="0" data-state="AK">Alaska (AK) — 0%</option>
-          <option value="5.6" data-state="AZ">Arizona (AZ) — 5.6%</option>
-          <option value="6.5" data-state="AR">Arkansas (AR) — 6.5%</option>
-          <option value="7.25" data-state="CA">California (CA) — 7.25%</option>
-          <option value="2.9" data-state="CO">Colorado (CO) — 2.9%</option>
-          <option value="6.35" data-state="CT">Connecticut (CT) — 6.35%</option>
-          <option value="0" data-state="DE">Delaware (DE) — 0%</option>
-          <option value="6.0" data-state="FL">Florida (FL) — 6%</option>
-          <option value="4.0" data-state="GA">Georgia (GA) — 4%</option>
-          <option value="4.0" data-state="HI">Hawaii (HI) — 4%</option>
-          <option value="5.0" data-state="ID">Idaho (ID) — 5%</option>
-          <option value="6.25" data-state="IL">Illinois (IL) — 6.25%</option>
-          <option value="7.0" data-state="IN">Indiana (IN) — 7%</option>
-          <option value="5.0" data-state="IA">Iowa (IA) — 5%</option>
-          <option value="6.5" data-state="KS">Kansas (KS) — 6.5%</option>
-          <option value="6.0" data-state="KY">Kentucky (KY) — 6%</option>
-          <option value="4.45" data-state="LA">Louisiana (LA) — 4.45%</option>
-          <option value="5.0" data-state="ME">Maine (ME) — 5%</option>
-          <option value="6.25" data-state="MA">Massachusetts (MA) — 6.25%</option>
-          <option value="6.0" data-state="MI">Michigan (MI) — 6%</option>
-          <option value="6.875" data-state="MN">Minnesota (MN) — 6.875%</option>
-          <option value="7.0" data-state="MS">Mississippi (MS) — 7%</option>
-          <option value="4.225" data-state="MO">Missouri (MO) — 4.225%</option>
-          <option value="0" data-state="MT">Montana (MT) — 0%</option>
-          <option value="5.5" data-state="NE">Nebraska (NE) — 5.5%</option>
-          <option value="4.6" data-state="NV">Nevada (NV) — 4.6%</option>
-          <option value="0" data-state="NH">New Hampshire (NH) — 0%</option>
-          <option value="6.625" data-state="NJ">New Jersey (NJ) — 6.625%</option>
-          <option value="5.125" data-state="NM">New Mexico (NM) — 5.125%</option>
-          <option value="4.0" data-state="NY">New York (NY) — 4%</option>
-          <option value="4.75" data-state="NC">North Carolina (NC) — 4.75%</option>
-          <option value="4.85" data-state="ND">North Dakota (ND) — 4.85%</option>
-          <option value="5.75" data-state="OH">Ohio (OH) — 5.75%</option>
-          <option value="4.5" data-state="OK">Oklahoma (OK) — 4.5%</option>
-          <option value="0" data-state="OR">Oregon (OR) — 0%</option>
-          <option value="6.0" data-state="PA">Pennsylvania (PA) — 6%</option>
-          <option value="7.0" data-state="RI">Rhode Island (RI) — 7%</option>
-          <option value="5.5" data-state="SC">South Carolina (SC) — 5.5%</option>
-          <option value="4.5" data-state="SD">South Dakota (SD) — 4.5%</option>
-          <option value="7.0" data-state="TN">Tennessee (TN) — 7%</option>
-          <option value="6.25" data-state="TX">Texas (TX) — 6.25%</option>
-          <option value="7.0" data-state="UT">Utah (UT) — 7%</option>
-          <option value="6.0" data-state="VT">Vermont (VT) — 6%</option>
-          <option value="5.3" data-state="VA">Virginia (VA) — 5.3%</option>
-          <option value="6.5" data-state="WA">Washington (WA) — 6.5%</option>
-          <option value="6.0" data-state="DC">Washington DC — 6%</option>
-          <option value="6.0" data-state="WV">West Virginia (WV) — 6%</option>
-          <option value="5.0" data-state="WI">Wisconsin (WI) — 5%</option>
-          <option value="4.0" data-state="WY">Wyoming (WY) — 4%</option>
-        </select>
-        <div class="crow2" style="margin-bottom:10px">
-          <div class="siw"><input type="number" class="sm" id="stateRate" placeholder="0" min="0" max="20" step="0.01"/><span class="ctag r">%</span></div>
-          <span class="note" data-i18n="stateTaxNote">state tax</span>
+      <!-- VAT (hidden when From & To = USD) -->
+      <div id="vatSection">
+        <hr class="divider" />
+        <div class="section-header">
+          <span class="section-title">VAT deduction</span>
+          <div class="switch-wrap" id="vatToggle">
+            <span class="switch-label" id="vatLabel">off</span>
+            <div class="switch" id="vatSwitch"></div>
+          </div>
         </div>
-        <div id="countyWrap" style="display:none">
-          <div data-i18n="county" style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:5px">🏛 County / Local Surtax</div>
-          <select id="countySel" style="margin-bottom:10px"><option value="" data-i18n="ph_county">Select county…</option></select>
-          <div class="crow2">
-            <div class="siw"><input type="number" class="sm" id="countyRate" placeholder="0" min="0" max="10" step="0.01" readonly/><span class="ctag r">%</span></div>
-            <span class="note" data-i18n="countySurtaxNote">county surtax</span>
-            <span class="capnote" id="capNote" data-i18n="cap">⚠ cap $5,000</span>
+        <div class="collapsible" id="vatControls">
+          <div class="controls-row">
+            <div class="small-input-wrap">
+              <input type="number" class="sm" id="vatRate" placeholder="0" min="0" max="100" step="0.1" />
+              <span class="cur-tag right">%</span>
+            </div>
+            <div class="presets">
+              <button class="preset-btn vat-preset" data-pct="8.1">8.1%</button>
+              <button class="preset-btn vat-preset" data-pct="22">22%</button>
+              <button class="preset-btn vat-preset" data-pct="20">20%</button>
+              <button class="preset-btn vat-preset" data-pct="19">19%</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- US Sales Tax (only when From & To = USD) -->
+      <div class="taxblock" id="taxBlock">
+        <hr class="divider" />
+        <div class="section-header">
+          <span class="section-title">🇺🇸 US Sales Tax</span>
+          <div class="switch-wrap" id="taxToggle">
+            <span class="switch-label" id="taxLabel">off</span>
+            <div class="switch" id="taxSwitch"></div>
+          </div>
+        </div>
+        <div class="collapsible" id="taxControls">
+          <div class="sub-label">State</div>
+          <select id="stateSel" style="margin-bottom:10px">
+            <option value="">Select state…</option>
+            <option value="4.0" data-state="AL">Alabama (AL) — 4%</option><option value="0" data-state="AK">Alaska (AK) — 0%</option><option value="5.6" data-state="AZ">Arizona (AZ) — 5.6%</option><option value="6.5" data-state="AR">Arkansas (AR) — 6.5%</option><option value="7.25" data-state="CA">California (CA) — 7.25%</option><option value="2.9" data-state="CO">Colorado (CO) — 2.9%</option><option value="6.35" data-state="CT">Connecticut (CT) — 6.35%</option><option value="0" data-state="DE">Delaware (DE) — 0%</option><option value="6.0" data-state="FL" selected>Florida (FL) — 6%</option><option value="4.0" data-state="GA">Georgia (GA) — 4%</option><option value="4.0" data-state="HI">Hawaii (HI) — 4%</option><option value="5.0" data-state="ID">Idaho (ID) — 5%</option><option value="6.25" data-state="IL">Illinois (IL) — 6.25%</option><option value="7.0" data-state="IN">Indiana (IN) — 7%</option><option value="5.0" data-state="IA">Iowa (IA) — 5%</option><option value="6.5" data-state="KS">Kansas (KS) — 6.5%</option><option value="6.0" data-state="KY">Kentucky (KY) — 6%</option><option value="4.45" data-state="LA">Louisiana (LA) — 4.45%</option><option value="5.0" data-state="ME">Maine (ME) — 5%</option><option value="6.25" data-state="MA">Massachusetts (MA) — 6.25%</option><option value="6.0" data-state="MI">Michigan (MI) — 6%</option><option value="6.875" data-state="MN">Minnesota (MN) — 6.875%</option><option value="7.0" data-state="MS">Mississippi (MS) — 7%</option><option value="4.225" data-state="MO">Missouri (MO) — 4.225%</option><option value="0" data-state="MT">Montana (MT) — 0%</option><option value="5.5" data-state="NE">Nebraska (NE) — 5.5%</option><option value="4.6" data-state="NV">Nevada (NV) — 4.6%</option><option value="0" data-state="NH">New Hampshire (NH) — 0%</option><option value="6.625" data-state="NJ">New Jersey (NJ) — 6.625%</option><option value="5.125" data-state="NM">New Mexico (NM) — 5.125%</option><option value="4.0" data-state="NY">New York (NY) — 4%</option><option value="4.75" data-state="NC">North Carolina (NC) — 4.75%</option><option value="4.85" data-state="ND">North Dakota (ND) — 4.85%</option><option value="5.75" data-state="OH">Ohio (OH) — 5.75%</option><option value="4.5" data-state="OK">Oklahoma (OK) — 4.5%</option><option value="0" data-state="OR">Oregon (OR) — 0%</option><option value="6.0" data-state="PA">Pennsylvania (PA) — 6%</option><option value="7.0" data-state="RI">Rhode Island (RI) — 7%</option><option value="5.5" data-state="SC">South Carolina (SC) — 5.5%</option><option value="4.5" data-state="SD">South Dakota (SD) — 4.5%</option><option value="7.0" data-state="TN">Tennessee (TN) — 7%</option><option value="6.25" data-state="TX">Texas (TX) — 6.25%</option><option value="7.0" data-state="UT">Utah (UT) — 7%</option><option value="6.0" data-state="VT">Vermont (VT) — 6%</option><option value="5.3" data-state="VA">Virginia (VA) — 5.3%</option><option value="6.5" data-state="WA">Washington (WA) — 6.5%</option><option value="6.0" data-state="DC">Washington DC — 6%</option><option value="6.0" data-state="WV">West Virginia (WV) — 6%</option><option value="5.0" data-state="WI">Wisconsin (WI) — 5%</option><option value="4.0" data-state="WY">Wyoming (WY) — 4%</option>
+          </select>
+          <div class="controls-row" style="margin-bottom:10px">
+            <div class="small-input-wrap">
+              <input type="number" class="sm" id="stateRate" placeholder="0" min="0" max="20" step="0.01" />
+              <span class="cur-tag right">%</span>
+            </div>
+            <span class="note">state tax</span>
+          </div>
+          <div id="countyWrap" style="display:none">
+            <div class="sub-label">🏛 County / Local Surtax</div>
+            <select id="countySel" style="margin-bottom:10px"><option value="">Select county…</option></select>
+            <div class="controls-row">
+              <div class="small-input-wrap">
+                <input type="number" class="sm" id="countyRate" placeholder="0" min="0" max="10" step="0.01" readonly />
+                <span class="cur-tag right">%</span>
+              </div>
+              <span class="note">county surtax</span>
+              <span class="capnote" id="capNote">⚠ cap $5,000</span>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div id="vatBlock">
-    <div class="div"></div>
-
-    <!-- VAT -->
-    <div class="sh">
-      <span class="st" data-i18n="vat">VAT Deduction</span>
-      <div class="sw-wrap" id="vatToggle"><span class="sw-lbl" id="vatLbl">off</span><div class="sw" id="vatSw"></div></div>
-    </div>
-    <div class="coll" id="vatColl">
-      <div class="crow2">
-        <div class="siw"><input type="number" class="sm" id="vatRate" placeholder="0" min="0" max="100" step="0.1"/><span class="ctag r">%</span></div>
-        <div class="presets">
-          <button class="pb" data-g="vat" data-v="8.1">8.1%</button>
-          <button class="pb" data-g="vat" data-v="22">22%</button>
-          <button class="pb" data-g="vat" data-v="20">20%</button>
-          <button class="pb" data-g="vat" data-v="19">19%</button>
-        </div>
+    <!-- Breakdown -->
+    <div class="breakdown" id="breakdownCard" style="display:none">
+      <div class="breakdown-row" id="row-orig" style="display:none">
+        <span class="b-label">Original price</span>
+        <span class="b-val" id="d-orig">—</span>
+      </div>
+      <div class="breakdown-row" id="row-disc" style="display:none">
+        <span class="b-label">Discount (<span id="d-discpct">0</span>%)</span>
+        <span class="b-val red" id="d-disc">—</span>
+      </div>
+      <div class="breakdown-row" id="row-fixdisc" style="display:none">
+        <span class="b-label">Fixed discount</span>
+        <span class="b-val red" id="d-fixdisc">—</span>
+      </div>
+      <div class="breakdown-row" id="row-saved" style="display:none">
+        <span class="b-label">You save</span>
+        <span class="b-val orange" id="d-saved">—</span>
+      </div>
+      <div class="breakdown-row" id="row-after-disc" style="display:none">
+        <span class="b-label">After discount</span>
+        <span class="b-val" id="d-after">—</span>
+      </div>
+      <div class="breakdown-row" id="row-pretax" style="display:none">
+        <span class="b-label">Price before tax</span>
+        <span class="b-val" id="t-pretax">—</span>
+      </div>
+      <div class="breakdown-row" id="row-state" style="display:none">
+        <span class="b-label">State tax (<span id="t-statepct">0</span>%)</span>
+        <span class="b-val blue" id="t-state">—</span>
+      </div>
+      <div class="breakdown-row" id="row-county" style="display:none">
+        <span class="b-label" id="t-county-label">County surtax</span>
+        <span class="b-val blue" id="t-county">—</span>
+      </div>
+      <div class="breakdown-row" id="row-aftertax" style="display:none">
+        <span class="b-label">After tax</span>
+        <span class="b-val" id="t-aftertax">—</span>
+      </div>
+      <div class="breakdown-row" id="row-gross" style="display:none">
+        <span class="b-label">Gross (incl. VAT)</span>
+        <span class="b-val" id="v-gross">—</span>
+      </div>
+      <div class="breakdown-row" id="row-vat" style="display:none">
+        <span class="b-label">VAT (<span id="v-vatpct">0</span>%)</span>
+        <span class="b-val red" id="v-vat">—</span>
+      </div>
+      <div class="breakdown-row" id="row-net" style="display:none">
+        <span class="b-label">Net ex-VAT</span>
+        <span class="b-val" id="v-net">—</span>
       </div>
     </div>
+
+    <!-- Result -->
+    <div class="result-card">
+      <div>
+        <p class="result-label" id="resultLabel">Result</p>
+        <p class="result-amount placeholder" id="resultAmt">0.00</p>
+        <p class="result-sub" id="resultSub" style="display:none"></p>
+      </div>
+      <div class="flag-wrap">
+        <span class="flag" id="toFlag">🇺🇸</span>
+        <span class="to-code" id="toCode">USD</span>
+        <button class="copy-btn" id="copyBtn" onclick="copyResult()">⎘ copy</button>
+        <input type="text" id="copyField" readonly style="position:fixed;top:-9999px;left:-9999px;font-size:16px;" />
+      </div>
     </div>
 
+    <!-- Action bar -->
+    <div class="action-bar">
+      <button class="print-btn" onclick="window.print()">🖨 Print / Save PDF</button>
+    </div>
+
+    <!-- Rate bar -->
+    <div class="rate-bar">
+      <div class="rate-info">
+        <span class="live-dot loading" id="liveDot"></span>
+        <span id="rateText">Fetching live rate…</span>
+      </div>
+      <button class="refresh-btn" onclick="fetchRate()">↻ refresh</button>
+    </div>
   </div>
 
-  <!-- Breakdown -->
-  <div class="bcard" id="bcard">
-    <div class="br" id="br-prods" style="display:none"><span class="bl" id="bl-prods">Products total</span><span class="bv" id="bv-prods"></span></div>
-    <div class="br" id="br-pdisc" style="display:none"><span class="bl" data-i18n="bdProdDisc">Product discounts</span><span class="bv red" id="bv-pdisc"></span></div>
-    <div class="br" id="br-pnet"  style="display:none"><span class="bl" data-i18n="bdProdNet">Net after discounts</span><span class="bv" id="bv-pnet"></span></div>
-    <div id="tiRows"></div>
-    <div class="br" id="br-oa"   style="display:none"><span class="bl" id="bl-oa">+ Open Account</span><span class="bv red" id="bv-oa"></span></div>
-    <div class="br" id="br-adj"  style="display:none"><span class="bl" data-i18n="bdAfterAdj">After adjustments</span><span class="bv" id="bv-adj"></span></div>
-    <div class="br" id="br-t1"   style="display:none"><span class="bl" data-i18n="bdPriceBeforeTax">Price before tax</span><span class="bv" id="bv-t1"></span></div>
-    <div class="br" id="br-t2"   style="display:none"><span class="bl" id="bl-t2">State tax</span><span class="bv blu" id="bv-t2"></span></div>
-    <div class="br" id="br-t3"   style="display:none"><span class="bl" id="bl-t3">County surtax</span><span class="bv blu" id="bv-t3"></span></div>
-    <div class="br" id="br-t4"   style="display:none"><span class="bl" data-i18n="bdAfterTax">After tax</span><span class="bv" id="bv-t4"></span></div>
-    <div class="br" id="br-v1"   style="display:none"><span class="bl" data-i18n="bdGross">Gross (incl. VAT)</span><span class="bv" id="bv-v1"></span></div>
-    <div class="br" id="br-v2"   style="display:none"><span class="bl" id="bl-v2">VAT</span><span class="bv red" id="bv-v2"></span></div>
-    <div class="br" id="br-v3"   style="display:none"><span class="bl" data-i18n="bdNet">Net ex-VAT</span><span class="bv" id="bv-v3"></span></div>
-    <div class="br" id="br-fp"   style="display:none"><span class="bl" data-i18n="bdFinal">Final amount</span><span class="bv" id="bv-fp"></span></div>
-    <div class="br" id="br-dep"  style="display:none"><span class="bl" id="bl-dep">− Deposit</span><span class="bv grn" id="bv-dep"></span></div>
-    <div class="br" id="br-bal"  style="display:none"><span class="bl" data-i18n="bdBalanceDue">Balance due</span><span class="bv" id="bv-bal"></span></div>
-  </div>
+  <script>
+    const FLAGS   = { EUR:'🇪🇺', CHF:'🇨🇭', USD:'🇺🇸', GBP:'🇬🇧', JPY:'🇯🇵', CAD:'🇨🇦', AUD:'🇦🇺', CNY:'🇨🇳', AED:'🇦🇪', HKD:'🇭🇰' };
+    const SYMBOLS = { EUR:'€', CHF:'CHF ', USD:'$', GBP:'£', JPY:'¥', CAD:'CA$', AUD:'A$', CNY:'¥', AED:'AED ', HKD:'HK$' };
+    const FALLBACK= { EUR:1, CHF:0.9276, USD:1.1478, GBP:0.8418, JPY:162.5, CAD:1.5590, AUD:1.7640, CNY:8.315, AED:4.214, HKD:8.951 };
 
-  <!-- Result -->
-  <div class="res">
-    <div>
-      <p class="rlbl" data-i18n="resultBalance">Result — Balance</p>
-      <p class="ramt ph" id="ramt">0.00</p>
-    </div>
-    <div class="fwrap">
-      <span class="flag" id="toFlag">🇺🇸</span>
-      <span class="tcode" id="toCode">USD</span>
-      <button class="cpbtn" id="cpbtn" data-i18n="copy" onclick="doCopy()">⎘ copy</button>
-      <input type="text" id="cpField" readonly style="position:fixed;top:-9999px;left:-9999px;font-size:16px"/>
-    </div>
-  </div>
+    let rates = {}, vatOn = false, discOn = false, taxOn = false;
 
-  <div class="abar">
-    <button class="pbtn" data-i18n="print" onclick="doPrint()">🖨 Print / Save PDF</button>
-  </div>
-
-  <div class="rbar">
-    <div class="rinfo">
-      <span class="dot off" id="dot"></span>
-      <span id="rtxt">Fetching rates…</span>
-    </div>
-    <button class="rfbtn" data-i18n="refresh" onclick="fetchRate()">↻ refresh</button>
-  </div>
-
-</div>
-
-<script>
-const FLAGS={EUR:'🇪🇺',CHF:'🇨🇭',USD:'🇺🇸',GBP:'🇬🇧',JPY:'🇯🇵',CAD:'🇨🇦',AUD:'🇦🇺',CNY:'🇨🇳',AED:'🇦🇪',HKD:'🇭🇰'};
-const APP_VERSION='v1.0';
-const SYM={EUR:'€',CHF:'CHF ',USD:'$',GBP:'£',JPY:'¥',CAD:'CA$',AUD:'A$',CNY:'¥',AED:'AED ',HKD:'HK$'};
-const FB={EUR:1,CHF:.9276,USD:1.1478,GBP:.8418,JPY:162.5,CAD:1.559,AUD:1.764,CNY:8.315,AED:4.214,HKD:8.951};
-const COUNTIES={
-  FL:{cap:5000,list:{'Alachua':1,'Baker':1,'Bay':1,'Bradford':1,'Brevard':1,'Broward':1,'Calhoun':1.5,'Charlotte':1,'Citrus':1,'Clay':1,'Collier':1,'Columbia':1,'DeSoto':1,'Dixie':1,'Duval':1,'Escambia':1.5,'Flagler':1,'Franklin':1.5,'Gadsden':1.5,'Gilchrist':1,'Glades':1,'Gulf':1,'Hamilton':1,'Hardee':1,'Hendry':1,'Hernando':1.5,'Highlands':1,'Hillsborough':1.5,'Holmes':1,'Indian River':1,'Jackson':1.5,'Jefferson':1.5,'Lafayette':1,'Lake':1,'Lee':1,'Leon':1.5,'Levy':1,'Liberty':2,'Madison':1.5,'Manatee':1,'Marion':1,'Martin':1,'Miami-Dade':1,'Monroe':1.5,'Nassau':1,'Okaloosa':1,'Okeechobee':1,'Orange':0.5,'Osceola':1.5,'Palm Beach':1,'Pasco':1,'Pinellas':1,'Polk':1,'Putnam':1,'St. Johns':0.5,'St. Lucie':1,'Santa Rosa':1,'Sarasota':1,'Seminole':1,'Sumter':1,'Suwannee':1,'Taylor':1,'Union':0.5,'Volusia':1.5,'Wakulla':1.5,'Walton':1,'Washington':1.5}},
-  NY:{cap:null,list:{'Albany County':4,'Bronx (NYC)':4.5,'Brooklyn / Kings (NYC)':4.5,'Buffalo / Erie':4.75,'Manhattan / New York (NYC)':4.5,'Nassau':4.25,'New York City (all boroughs)':4.5,'Queens (NYC)':4.5,'Richmond / Staten Island (NYC)':4.5,'Rockland':4,'Suffolk':4.25,'Westchester':3}},
-  CA:{cap:null,list:{'Alameda':3,'Los Angeles':2.25,'Orange':0.5,'Riverside':1.5,'Sacramento':1,'San Bernardino':1,'San Diego':0.75,'San Francisco':1.25,'San Jose / Santa Clara':2.25,'Ventura':0.25}},
-  TX:{cap:null,list:{'Austin / Travis':2,'Dallas':2,'El Paso':2,'Fort Worth / Tarrant':2,'Houston / Harris':2,'San Antonio / Bexar':2}},
-  NJ:{cap:null,list:{'All counties (uniform rate)':0}}
-};
-
-// ---- i18n ----
-const I18N={
-  en:{eyebrow:'Horology · Finance',client:'Client',vendor:'Vendor',ph_name:'name…',ph_addr:'address…',ph_city:'city / country…',ph_citystate:'city / state…',ph_country:'country…',orderNo:'Order no.',orderDate:'Order date',ph_orderNo:'#0001',from:'From',to:'To',products:'New Product(s)',ph_model:'model / ref…',addProduct:'+ Add product',tradeins:'Trade-in(s)',addTrade:'+ Add trade-in',tradeItem:'Trade-in',ti1:'Trade-in 1',ti2:'Trade-in 2',ti3:'Trade-in 3',openAcct:'Open Acct',openBal:'Open Account Balance',oaDebitHint:'added to the total (+)',oaCreditHint:'deducted from the total (−)',ph_note:'note…',salesTax:'🇺🇸 US Sales Tax',state:'State',ph_state:'Select state…',stateTaxNote:'state tax',county:'🏛 County / Local Surtax',ph_county:'Select county…',countySurtaxNote:'county surtax',cap:'⚠ cap $5,000',discount:'Discount',fixedDisc:'Fixed disc.',vat:'VAT Deduction',deposit:'Deposit / Down payment and/or Balance',depositShort:'Deposit',payCopy:'Payment copy',payUpload:'Upload payment copy',balancePayment:'Balance Payment',resultBalance:'Result — Balance',copy:'⎘ copy',copied:'✓ copied',print:'🖨 Print / Save PDF',fetching:'Fetching rates…',refresh:'↻ refresh',bdProducts:'Products',bdProdDisc:'Product discounts',bdProdNet:'Net after discounts',bdAfterAdj:'After adjustments',bdDiscount:'Discount',bdFixedDisc:'Fixed discount',bdYouSave:'You save',bdAfterDisc:'After discount',bdPriceBeforeTax:'Price before tax',bdStateTax:'State tax',bdCountySurtax:'County surtax',bdOnFirst:'on first',bdAfterTax:'After tax',bdGross:'Gross (incl. VAT)',bdVat:'VAT',bdNet:'Net ex-VAT',bdFinal:'Final amount',bdDeposit:'Deposit',bdBalanceDue:'Balance due',bdOpenAccount:'Open Account',base:'Base:',pOrder:'Order',pProduct:'Product',pProducts:'Products',pClient:'Client',pVendor:'Vendor',pResult:'Result — Balance'},
-  it:{eyebrow:'Horology · Finance',client:'Cliente',vendor:'Venditore',ph_name:'nome…',ph_addr:'indirizzo…',ph_city:'città / paese…',ph_citystate:'città / stato…',ph_country:'paese…',orderNo:'N. ordine',orderDate:'Data ordine',ph_orderNo:'#0001',from:'Da',to:'A',products:'Nuovo Prodotto/i',ph_model:'modello / ref…',addProduct:'+ Aggiungi prodotto',tradeins:'Permuta/e',addTrade:'+ Aggiungi permuta',tradeItem:'Permuta',ti1:'Permuta 1',ti2:'Permuta 2',ti3:'Permuta 3',openAcct:'Conto aperto',openBal:'Saldo aperto',oaDebitHint:'aggiunto al totale (+)',oaCreditHint:'detratto dal totale (−)',ph_note:'nota…',salesTax:'🇺🇸 Sales Tax USA',state:'Stato',ph_state:'Seleziona stato…',stateTaxNote:'tassa stato',county:'🏛 Contea / Sovrattassa',ph_county:'Seleziona contea…',countySurtaxNote:'sovrattassa contea',cap:'⚠ tetto $5.000',discount:'Sconto',fixedDisc:'Sconto fisso',vat:'Deduzione IVA',deposit:'Acconto / Caparra e/o Pagamento Saldo',depositShort:'Acconto',payCopy:'Copia pagamento',payUpload:'Carica copia pagamento',balancePayment:'Pagamento Saldo',resultBalance:'Risultato — Saldo',copy:'⎘ copia',copied:'✓ copiato',print:'🖨 Stampa / Salva PDF',fetching:'Aggiornamento tassi…',refresh:'↻ aggiorna',bdProducts:'Prodotti',bdProdDisc:'Sconti prodotto',bdProdNet:'Netto dopo sconti',bdAfterAdj:'Dopo aggiustamenti',bdDiscount:'Sconto',bdFixedDisc:'Sconto fisso',bdYouSave:'Risparmio',bdAfterDisc:'Dopo sconto',bdPriceBeforeTax:'Prezzo ante imposta',bdStateTax:'Imposta stato',bdCountySurtax:'Sovrattassa contea',bdOnFirst:'su primi',bdAfterTax:'Dopo imposta',bdGross:'Lordo (IVA incl.)',bdVat:'IVA',bdNet:'Netto IVA escl.',bdFinal:'Importo finale',bdDeposit:'Acconto',bdBalanceDue:'Saldo dovuto',bdOpenAccount:'Conto aperto',base:'Base:',pOrder:'Ordine',pProduct:'Prodotto',pProducts:'Prodotti',pClient:'Cliente',pVendor:'Venditore',pResult:'Risultato — Saldo'}
-};
-let lang='en';
-const t=()=>I18N[lang];
-const dloc=()=>lang==='it'?'it-IT':'en-GB';
-
-let rates={}, vatOn=false, taxOn=false, tradeOn=false;
-let oaOn=false, oaCredit=false;
-let pdiscOn={}, pdepOn={}, pimg={}, timg={}, ppay={};
-let prodCount=0, tradeCount=0;
-const $=id=>document.getElementById(id);
-
-const CUROPTS=`<option value="USD">🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option><option value="CHF">🇨🇭 CHF</option><option value="GBP">🇬🇧 GBP</option><option value="JPY">🇯🇵 JPY</option><option value="CAD">🇨🇦 CAD</option><option value="AUD">🇦🇺 AUD</option><option value="CNY">🇨🇳 CNY</option><option value="AED">🇦🇪 AED</option><option value="HKD">🇭🇰 HKD</option>`;
-
-function applyLang(l){
-  lang=l;
-  document.documentElement.lang=l;
-  const d=I18N[l];
-  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n'); if(d[k]!=null) el.textContent=d[k];});
-  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{const k=el.getAttribute('data-i18n-ph'); if(d[k]!=null) el.placeholder=d[k];});
-  document.querySelectorAll('#langTog .lt').forEach(b=>b.classList.toggle('on',b.dataset.lang===l));
-  const cs=$('countySel'); if(cs&&cs.options.length&&cs.options[0].value===''){ cs.options[0].textContent=d.ph_county; }
-  if(typeof updateOaDir==='function') updateOaDir();
-  calc();
-}
-
-function addProduct(){
-  prodCount++;
-  const id=prodCount;
-  pdiscOn[id]=false;
-  pdepOn[id]=false;
-  const div=document.createElement('div');
-  div.className='prod-group';
-  div.id='prod-'+id;
-  div.dataset.n=id;
-  div.innerHTML=`
-    <div class="prod-row">
-      <select class="adj-cur prod-cur" id="pcur-${id}">${CUROPTS}</select>
-      <div class="adj-amt igroup"><input type="number" id="pamt-${id}" placeholder="0.00" min="0" step="0.01" oninput="calc()" onchange="fetchRate()"/></div>
-      <div class="adj-model igroup"><input type="text" id="pmod-${id}" data-i18n-ph="ph_model" placeholder="${t().ph_model}" oninput="calc()"/></div>
-      <div class="pphoto" data-i="${id}" title="Photo">
-        <input type="file" class="pfile" data-i="${id}" accept="image/*" style="display:none"/>
-        <span class="pphoto-ph">📷</span>
-        <img class="pphoto-img" alt="" style="display:none"/>
-        <button class="pphoto-rm" data-i="${id}" style="display:none" title="Remove photo">✕</button>
-      </div>
-      <button class="prod-del" onclick="delProduct(${id})" title="Remove">✕</button>
-    </div>
-    <div class="sh pdisc-head" style="margin-top:6px;margin-bottom:0">
-      <span class="st" data-i18n="discount" style="opacity:.65">${t().discount}</span>
-      <div class="sw-wrap pdisc-toggle" data-i="${id}"><span class="sw-lbl pdisc-lbl" data-i="${id}">off</span><div class="sw pdisc-sw" data-i="${id}"></div></div>
-    </div>
-    <div class="coll pdisc-coll" data-i="${id}">
-      <div class="crow2">
-        <div class="siw"><input type="number" class="sm pdisc-rate" data-i="${id}" placeholder="0" min="0" max="100" step="0.1" oninput="calc()"/><span class="ctag r">%</span></div>
-        <div class="presets">
-          <button class="pb pdisc-pb" data-i="${id}" data-v="5">5%</button>
-          <button class="pb pdisc-pb" data-i="${id}" data-v="10">10%</button>
-          <button class="pb pdisc-pb" data-i="${id}" data-v="15">15%</button>
-          <button class="pb pdisc-pb" data-i="${id}" data-v="20">20%</button>
-          <button class="pb pdisc-pb" data-i="${id}" data-v="30">30%</button>
-          <button class="pb pdisc-pb" data-i="${id}" data-v="50">50%</button>
-        </div>
-      </div>
-      <div class="adj-row" style="margin-top:10px;margin-bottom:0">
-        <span class="adj-lbl" data-i18n="fixedDisc" style="font-size:9px">${t().fixedDisc}</span>
-        <select class="adj-cur pfix-cur" data-i="${id}">${CUROPTS}</select>
-        <div class="adj-amt igroup"><input type="number" class="pfix-val" data-i="${id}" placeholder="0.00" min="0" step="0.01" oninput="calc()"/></div>
-      </div>
-    </div>
-    <div class="sh pdep-head" style="margin-top:6px;margin-bottom:0">
-      <span class="st" data-i18n="deposit" style="opacity:.65">${t().deposit}</span>
-      <div class="sw-wrap pdep-toggle" data-i="${id}"><span class="sw-lbl pdep-lbl" data-i="${id}">off</span><div class="sw pdep-sw" data-i="${id}"></div></div>
-    </div>
-    <div class="coll pdep-coll" data-i="${id}">
-      <div class="adj-row" style="margin-bottom:0">
-        <select class="adj-cur pdep-cur" data-i="${id}" style="color:var(--green);border-color:var(--green)">${CUROPTS}</select>
-        <div class="adj-amt igroup" style="border-color:var(--green)"><input type="number" class="pdep-val" data-i="${id}" placeholder="0.00" min="0" step="0.01" style="color:var(--green)" oninput="calc()"/></div>
-        <div class="adj-model igroup"><input type="text" class="pdep-note" data-i="${id}" data-i18n-ph="ph_note" placeholder="${t().ph_note}" oninput="calc()"/></div>
-      </div>
-      <div class="ppay-row">
-        <div class="ppay-thumb" data-i="${id}" title="Payment copy">
-          <input type="file" class="ppayfile" data-i="${id}" accept="image/*" style="display:none"/>
-          <span class="ppay-ph">📎</span>
-          <img class="ppay-img" alt="" style="display:none"/>
-          <button type="button" class="ppay-rm" data-i="${id}" style="display:none" title="Remove">✕</button>
-        </div>
-        <button type="button" class="ppay-btn" data-i="${id}" data-i18n="payUpload">${t().payUpload}</button>
-      </div>
-    </div>`;
-  $('prodList').appendChild(div);
-  const psel=div.querySelector('.prod-cur');
-  const bc=$('baseCur'); if(bc&&psel) psel.value=bc.value;
-  const pfix=div.querySelector('.pfix-cur'); if(bc&&pfix) pfix.value=bc.value;
-  psel.addEventListener('change',()=>{fetchRate();});
-  pfix.addEventListener('change',calc);
-  div.querySelector('.pdisc-toggle').addEventListener('click',()=>{
-    pdiscOn[id]=!pdiscOn[id];
-    div.querySelector('.pdisc-sw').classList.toggle('on',pdiscOn[id]);
-    div.querySelector('.pdisc-lbl').textContent=pdiscOn[id]?'on':'off';
-    div.querySelector('.pdisc-coll').classList.toggle('open',pdiscOn[id]);
-    calc();
-  });
-  div.querySelectorAll('.pdisc-pb').forEach(b=>{
-    b.addEventListener('click',()=>{
-      const inp=div.querySelector('.pdisc-rate');
-      const peers=div.querySelectorAll('.pdisc-pb');
-      if(b.classList.contains('on')){ inp.value=''; peers.forEach(p=>p.classList.remove('on')); }
-      else { inp.value=b.dataset.v; peers.forEach(p=>p.classList.remove('on')); b.classList.add('on'); }
-      calc();
-    });
-  });
-  const pdep=div.querySelector('.pdep-cur'); if(bc&&pdep) pdep.value=bc.value;
-  pdep.addEventListener('change',calc);
-  div.querySelector('.pdep-toggle').addEventListener('click',()=>{
-    pdepOn[id]=!pdepOn[id];
-    div.querySelector('.pdep-sw').classList.toggle('on',pdepOn[id]);
-    div.querySelector('.pdep-lbl').textContent=pdepOn[id]?'on':'off';
-    div.querySelector('.pdep-coll').classList.toggle('open',pdepOn[id]);
-    calc();
-  });
-  // Payment copy upload
-  const ppfile=div.querySelector('.ppayfile');
-  const ppbox=div.querySelector('.ppay-thumb');
-  const pprm=div.querySelector('.ppay-rm');
-  const ppbtn=div.querySelector('.ppay-btn');
-  ppfile.addEventListener('change',()=>setPaymentImage(id, ppfile.files&&ppfile.files[0]));
-  ppbox.addEventListener('click',(e)=>{ if(e.target===pprm) return; if(!ppay[id]) ppfile.click(); });
-  ppbtn.addEventListener('click',()=>{ if(!ppay[id]) ppfile.click(); });
-  pprm.addEventListener('click',(e)=>{ e.stopPropagation(); clearPaymentImage(id); });
-  // Photo upload
-  const pfile=div.querySelector('.pfile');
-  const pbox=div.querySelector('.pphoto');
-  const prm=div.querySelector('.pphoto-rm');
-  pfile.addEventListener('change',()=>setProductImage(id, pfile.files&&pfile.files[0]));
-  pbox.addEventListener('click',(e)=>{ if(e.target===prm) return; if(!pimg[id]) pfile.click(); });
-  prm.addEventListener('click',(e)=>{ e.stopPropagation(); clearProductImage(id); });
-}
-
-// Resize an uploaded photo to max 400px long side, store as JPEG data URL
-function setProductImage(id, file){
-  if(!file) return;
-  const reader=new FileReader();
-  reader.onload=function(){
-    const im=new Image();
-    im.onload=function(){
-      const max=400; let w=im.width, h=im.height;
-      if(w>=h && w>max){ h=Math.round(h*max/w); w=max; }
-      else if(h>w && h>max){ w=Math.round(w*max/h); h=max; }
-      let data;
-      try{
-        const c=document.createElement('canvas'); c.width=w; c.height=h;
-        c.getContext('2d').drawImage(im,0,0,w,h);
-        data=c.toDataURL('image/jpeg',0.85);
-      }catch(e){ data=reader.result; }
-      pimg[id]=data;
-      const g=$('prod-'+id);
-      if(g){
-        const t=g.querySelector('.pphoto-img'), ph=g.querySelector('.pphoto-ph'),
-              rm=g.querySelector('.pphoto-rm'), box=g.querySelector('.pphoto');
-        if(t){ t.src=data; t.style.display='block'; }
-        if(ph) ph.style.display='none';
-        if(rm) rm.style.display='block';
-        if(box) box.style.borderStyle='solid';
-      }
-      calc();
+    const COUNTIES = {
+      FL:{cap:5000,list:{'Alachua':1,'Baker':1,'Bay':1,'Bradford':1,'Brevard':1,'Broward':1,'Calhoun':1.5,'Charlotte':1,'Citrus':1,'Clay':1,'Collier':1,'Columbia':1,'DeSoto':1,'Dixie':1,'Duval':1,'Escambia':1.5,'Flagler':1,'Franklin':1.5,'Gadsden':1.5,'Gilchrist':1,'Glades':1,'Gulf':1,'Hamilton':1,'Hardee':1,'Hendry':1,'Hernando':1.5,'Highlands':1,'Hillsborough':1.5,'Holmes':1,'Indian River':1,'Jackson':1.5,'Jefferson':1.5,'Lafayette':1,'Lake':1,'Lee':1,'Leon':1.5,'Levy':1,'Liberty':2,'Madison':1.5,'Manatee':1,'Marion':1,'Martin':1,'Miami-Dade':1,'Monroe':1.5,'Nassau':1,'Okaloosa':1,'Okeechobee':1,'Orange':0.5,'Osceola':1.5,'Palm Beach':1,'Pasco':1,'Pinellas':1,'Polk':1,'Putnam':1,'Santa Rosa':1,'Sarasota':1,'Seminole':1,'St. Johns':0.5,'St. Lucie':1,'Sumter':1,'Suwannee':1,'Taylor':1,'Union':0.5,'Volusia':1.5,'Wakulla':1.5,'Walton':1,'Washington':1.5}},
+      NY:{cap:null,list:{'Albany County':4,'Bronx (NYC)':4.5,'Brooklyn / Kings (NYC)':4.5,'Buffalo / Erie':4.75,'Manhattan / New York (NYC)':4.5,'Nassau':4.25,'New York City (all boroughs)':4.5,'Queens (NYC)':4.5,'Richmond / Staten Island (NYC)':4.5,'Rockland':4,'Suffolk':4.25,'Westchester':3}},
+      CA:{cap:null,list:{'Alameda':3,'Los Angeles':2.25,'Orange':0.5,'Riverside':1.5,'Sacramento':1,'San Bernardino':1,'San Diego':0.75,'San Francisco':1.25,'San Jose / Santa Clara':2.25,'Ventura':0.25}},
+      TX:{cap:null,list:{'Austin / Travis':2,'Dallas':2,'El Paso':2,'Fort Worth / Tarrant':2,'Houston / Harris':2,'San Antonio / Bexar':2}},
+      NJ:{cap:null,list:{'All counties (uniform rate)':0}}
     };
-    im.src=reader.result;
-  };
-  reader.readAsDataURL(file);
-}
 
-function clearProductImage(id){
-  delete pimg[id];
-  const g=$('prod-'+id);
-  if(g){
-    const t=g.querySelector('.pphoto-img'), ph=g.querySelector('.pphoto-ph'),
-          rm=g.querySelector('.pphoto-rm'), box=g.querySelector('.pphoto'), f=g.querySelector('.pfile');
-    if(t){ t.style.display='none'; t.src=''; }
-    if(ph) ph.style.display='block';
-    if(rm) rm.style.display='none';
-    if(box) box.style.borderStyle='dashed';
-    if(f) f.value='';
-  }
-  calc();
-}
+    const fromCur      = document.getElementById('fromCur');
+    const toCur        = document.getElementById('toCur');
+    const amountInput  = document.getElementById('amountInput');
+    const fromTag      = document.getElementById('fromTag');
+    const vatRateInput = document.getElementById('vatRate');
+    const discRateInput= document.getElementById('discRate');
+    const fixDiscCur   = document.getElementById('fixDiscCur');
+    const fixDiscVal   = document.getElementById('fixDiscVal');
 
-// Payment copy (receipt) — resize to max 700px long side, store as JPEG data URL
-function setPaymentImage(id, file){
-  if(!file) return;
-  const reader=new FileReader();
-  reader.onload=function(){
-    const im=new Image();
-    im.onload=function(){
-      const max=700; let w=im.width, h=im.height;
-      if(w>=h && w>max){ h=Math.round(h*max/w); w=max; }
-      else if(h>w && h>max){ w=Math.round(w*max/h); h=max; }
-      let data;
-      try{
-        const c=document.createElement('canvas'); c.width=w; c.height=h;
-        c.getContext('2d').drawImage(im,0,0,w,h);
-        data=c.toDataURL('image/jpeg',0.85);
-      }catch(e){ data=reader.result; }
-      ppay[id]=data;
-      const g=$('prod-'+id);
-      if(g){
-        const t=g.querySelector('.ppay-img'), ph=g.querySelector('.ppay-ph'),
-              rm=g.querySelector('.ppay-rm'), box=g.querySelector('.ppay-thumb'), btn=g.querySelector('.ppay-btn');
-        if(t){ t.src=data; t.style.display='block'; }
-        if(ph) ph.style.display='none';
-        if(rm) rm.style.display='block';
-        if(box) box.style.borderStyle='solid';
-      }
-      calc();
-    };
-    im.src=reader.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-function clearPaymentImage(id){
-  delete ppay[id];
-  const g=$('prod-'+id);
-  if(g){
-    const t=g.querySelector('.ppay-img'), ph=g.querySelector('.ppay-ph'),
-          rm=g.querySelector('.ppay-rm'), box=g.querySelector('.ppay-thumb'), f=g.querySelector('.ppayfile');
-    if(t){ t.style.display='none'; t.src=''; }
-    if(ph) ph.style.display='block';
-    if(rm) rm.style.display='none';
-    if(box) box.style.borderStyle='dashed';
-    if(f) f.value='';
-  }
-  calc();
-}
-
-function delProduct(id){
-  const el=$('prod-'+id);
-  if(el) el.remove();
-  delete pdiscOn[id];
-  delete pdepOn[id];
-  delete pimg[id];
-  delete ppay[id];
-  calc();
-}
-
-function lineGrossBase(p){ return toBase(p.amt,p.cur); }
-function lineNetBase(p){
-  const g=toBase(p.amt,p.cur);
-  const fixB=toBase(p.fixVal,p.fixCur);
-  return Math.max(0, g - g*p.discPct/100 - fixB);
-}
-
-function addTradeIn(){
-  tradeCount++;
-  const id=tradeCount;
-  const div=document.createElement('div');
-  div.className='prod-row trade-row';
-  div.id='trade-'+id;
-  div.dataset.n=id;
-  div.innerHTML=`
-    <select class="adj-cur tcur" id="tcur-${id}">${CUROPTS}</select>
-    <div class="adj-amt igroup"><input type="number" id="tval-${id}" placeholder="0.00" min="0" step="0.01" oninput="calc()"/></div>
-    <div class="adj-model igroup"><input type="text" id="tmod-${id}" data-i18n-ph="ph_model" placeholder="${t().ph_model}" oninput="calc()"/></div>
-    <div class="pphoto" data-i="${id}" title="Photo">
-      <input type="file" class="tfile" data-i="${id}" accept="image/*" style="display:none"/>
-      <span class="pphoto-ph">📷</span>
-      <img class="pphoto-img" alt="" style="display:none"/>
-      <button class="pphoto-rm" data-i="${id}" style="display:none" title="Remove photo">✕</button>
-    </div>
-    <button class="prod-del" onclick="delTradeIn(${id})" title="Remove">✕</button>`;
-  $('tradeList').appendChild(div);
-  const sel=div.querySelector('.tcur');
-  const bc=$('baseCur'); if(bc&&sel) sel.value=bc.value;
-  sel.addEventListener('change',calc);
-  const tfile=div.querySelector('.tfile');
-  const tbox=div.querySelector('.pphoto');
-  const trm=div.querySelector('.pphoto-rm');
-  tfile.addEventListener('change',()=>setTradeImage(id, tfile.files&&tfile.files[0]));
-  tbox.addEventListener('click',(e)=>{ if(e.target===trm) return; if(!timg[id]) tfile.click(); });
-  trm.addEventListener('click',(e)=>{ e.stopPropagation(); clearTradeImage(id); });
-  calc();
-}
-
-// Trade-in photo (resize to max 400px, store as JPEG data URL)
-function setTradeImage(id, file){
-  if(!file) return;
-  const reader=new FileReader();
-  reader.onload=function(){
-    const im=new Image();
-    im.onload=function(){
-      const max=400; let w=im.width, h=im.height;
-      if(w>=h && w>max){ h=Math.round(h*max/w); w=max; }
-      else if(h>w && h>max){ w=Math.round(w*max/h); h=max; }
-      let data;
-      try{
-        const c=document.createElement('canvas'); c.width=w; c.height=h;
-        c.getContext('2d').drawImage(im,0,0,w,h);
-        data=c.toDataURL('image/jpeg',0.85);
-      }catch(e){ data=reader.result; }
-      timg[id]=data;
-      const g=$('trade-'+id);
-      if(g){
-        const tn=g.querySelector('.pphoto-img'), ph=g.querySelector('.pphoto-ph'),
-              rm=g.querySelector('.pphoto-rm'), box=g.querySelector('.pphoto');
-        if(tn){ tn.src=data; tn.style.display='block'; }
-        if(ph) ph.style.display='none';
-        if(rm) rm.style.display='block';
-        if(box) box.style.borderStyle='solid';
-      }
-      calc();
-    };
-    im.src=reader.result;
-  };
-  reader.readAsDataURL(file);
-}
-
-function clearTradeImage(id){
-  delete timg[id];
-  const g=$('trade-'+id);
-  if(g){
-    const tn=g.querySelector('.pphoto-img'), ph=g.querySelector('.pphoto-ph'),
-          rm=g.querySelector('.pphoto-rm'), box=g.querySelector('.pphoto'), f=g.querySelector('.tfile');
-    if(tn){ tn.style.display='none'; tn.src=''; }
-    if(ph) ph.style.display='block';
-    if(rm) rm.style.display='none';
-    if(box) box.style.borderStyle='dashed';
-    if(f) f.value='';
-  }
-  calc();
-}
-
-function delTradeIn(id){
-  const el=$('trade-'+id);
-  if(el) el.remove();
-  delete timg[id];
-  calc();
-}
-
-function getTradeIns(){
-  const items=[];
-  $('tradeList').querySelectorAll('.trade-row').forEach(g=>{
-    const n=g.dataset.n; if(!n) return;
-    const val=parseFloat($('tval-'+n)&&$('tval-'+n).value)||0;
-    const cur=($('tcur-'+n)&&$('tcur-'+n).value)||'USD';
-    const mod=($('tmod-'+n)&&$('tmod-'+n).value.trim())||'';
-    items.push({val,cur,mod,img:timg[n]||'',base:toBase(val,cur)});
-  });
-  return items;
-}
-
-function getProducts(){
-  const items=[];
-  $('prodList').querySelectorAll('.prod-group').forEach(group=>{
-    const n=group.dataset.n;
-    if(!n) return;
-    const amt=parseFloat($('pamt-'+n)&&$('pamt-'+n).value)||0;
-    const cur=($('pcur-'+n)&&$('pcur-'+n).value)||'USD';
-    const mod=($('pmod-'+n)&&$('pmod-'+n).value.trim())||'';
-    const on=!!pdiscOn[n];
-    const dr=group.querySelector('.pdisc-rate');
-    const fv=group.querySelector('.pfix-val');
-    const fc=group.querySelector('.pfix-cur');
-    const discPct=on?(parseFloat(dr&&dr.value)||0):0;
-    const fixVal=on?(parseFloat(fv&&fv.value)||0):0;
-    const fixCur=(fc&&fc.value)||cur;
-    const depActive=!!pdepOn[n];
-    const dpv=group.querySelector('.pdep-val');
-    const dpc=group.querySelector('.pdep-cur');
-    const dpn=group.querySelector('.pdep-note');
-    const depAmt=depActive?(parseFloat(dpv&&dpv.value)||0):0;
-    const depCur=(dpc&&dpc.value)||cur;
-    const depNote=(dpn&&dpn.value.trim())||'';
-    items.push({amt,cur,mod,n,discPct,fixVal,fixCur,depAmt,depCur,depNote,img:pimg[n]||'',pay:ppay[n]||''});
-  });
-  return items;
-}
-
-function fmt(n,cur){
-  if(cur==='JPY') return (SYM[cur]||'')+Math.round(n).toLocaleString('en-US');
-  return (SYM[cur]||'')+n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-}
-function pf(v){return v%1===0?String(v):parseFloat(v).toFixed(3).replace(/\.?0+$/,'')}
-function row(id,vis){const e=$(id);if(e)e.style.display=vis?'flex':'none';}
-function setText(id,val){const e=$(id);if(e)e.textContent=val;}
-
-function toBase(amount,cur){
-  if(!amount||isNaN(amount)||amount===0) return 0;
-  const from=$('fromCur').value;
-  if(cur===from) return amount;
-  const rFrom=rates[from]||FB[from]||1;
-  const rCur=rates[cur]||FB[cur]||1;
-  return amount*(rFrom/rCur);
-}
-
-function checkTax(){
-  const isUSD=$('fromCur').value==='USD'||$('toCur').value==='USD';
-  $('taxBlock').classList.toggle('show',isUSD);
-  if(!isUSD&&taxOn){
-    taxOn=false; $('taxSw').classList.remove('on'); $('taxLbl').textContent='off';
-    $('taxColl').classList.remove('open'); $('stateSel').value=''; $('stateRate').value='';
-    $('countyWrap').style.display='none';
-    $('countySel').innerHTML='<option value="">'+t().ph_county+'</option>';
-    $('countyRate').value='';
-  }
-  // USD → USD: nascondi del tutto la sezione VAT Deduction (e disattivala se accesa)
-  const bothUSD=$('fromCur').value==='USD'&&$('toCur').value==='USD';
-  const vb=$('vatBlock'); if(vb) vb.style.display=bothUSD?'none':'';
-  if(bothUSD&&vatOn){
-    vatOn=false; $('vatSw').classList.remove('on'); $('vatLbl').textContent='off';
-    $('vatColl').classList.remove('open'); $('vatRate').value='';
-    document.querySelectorAll('.pb[data-g="vat"]').forEach(p=>p.classList.remove('on'));
-  }
-  // USD → USD: se la sezione tax è già aperta e nessuno stato è ancora scelto, default Florida + Miami-Dade
-  if(bothUSD&&taxOn){ applyTaxDefaults(); }
-}
-
-// Default Florida (state) + Miami-Dade (county) quando si è in USD → USD.
-// Non sovrascrive una scelta già fatta dall'utente (a meno che force=true).
-function applyTaxDefaults(force){
-  if($('fromCur').value!=='USD'||$('toCur').value!=='USD') return;
-  const ss=$('stateSel');
-  if(!force && ss.value!=='') return;
-  let fi=-1;
-  for(let i=0;i<ss.options.length;i++){ if(ss.options[i].dataset.state==='FL'){ fi=i; break; } }
-  if(fi<0) return;
-  ss.selectedIndex=fi;
-  ss.dispatchEvent(new Event('change'));
-  const cs=$('countySel');
-  let ci=-1;
-  for(let i=0;i<cs.options.length;i++){ if(cs.options[i].textContent.indexOf('Miami-Dade')===0){ ci=i; break; } }
-  if(ci>=0){ cs.selectedIndex=ci; cs.dispatchEvent(new Event('change')); }
-}
-
-$('stateSel').addEventListener('change',()=>{
-  const opt=$('stateSel').selectedOptions[0];
-  $('stateRate').value=opt?opt.value:'';
-  const code=opt?opt.dataset.state:'';
-  const cd=COUNTIES[code]||null;
-  const cs=$('countySel');
-  cs.innerHTML='<option value="">'+t().ph_county+'</option>';
-  $('countyRate').value=''; $('capNote').style.display='none';
-  if(cd&&Object.keys(cd.list).length){
-    Object.entries(cd.list).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([n,r])=>{const o=document.createElement('option');o.value=r;o.textContent=`${n}  (+${r}%)`;cs.appendChild(o);});
-    $('countyWrap').style.display='block';
-  } else { $('countyWrap').style.display='none'; }
-  calc();
-});
-$('countySel').addEventListener('change',()=>{
-  const v=$('countySel').value; $('countyRate').value=v;
-  const code=($('stateSel').selectedOptions[0]&&$('stateSel').selectedOptions[0].dataset.state)||'';
-  $('capNote').style.display=(v&&COUNTIES[code]&&COUNTIES[code].cap)?'inline':'none';
-  calc();
-});
-$('stateRate').addEventListener('input',calc);
-$('countyRate').addEventListener('input',calc);
-
-function calc(){
-  const from=$('fromCur').value, to=$('toCur').value;
-  const r=(from===to)?1:(rates[to]&&rates[from]?rates[to]/rates[from]:null);
-  const statePct=taxOn?(parseFloat($('stateRate').value)||0):0;
-  const ctyPct=taxOn?(parseFloat($('countyRate').value)||0):0;
-  const vatPct=vatOn?(parseFloat($('vatRate').value)||0):0;
-
-  $('toFlag').textContent=FLAGS[to]||'💱';
-  $('toCode').textContent=to;
-
-  // Products total
-  const prods=getProducts();
-  const prodGross=prods.reduce((s,p)=>s+lineGrossBase(p),0);
-  const prodNet=prods.reduce((s,p)=>s+lineNetBase(p),0);
-  const lineDisc=prodGross-prodNet;
-  const has=prodGross>0;
-
-  // Product label in breakdown
-  if(prods.length===1&&prods[0].mod){
-    setText('bl-prods',prods[0].mod);
-  } else {
-    setText('bl-prods',`${t().bdProducts} (${prods.filter(p=>p.amt>0).length})`);
-  }
-  setText('bv-prods',fmt(prodGross,from));
-  row('br-prods',has);
-  if(lineDisc>0.005){ setText('bv-pdisc','− '+fmt(lineDisc,from)); setText('bv-pnet',fmt(prodNet,from)); }
-  row('br-pdisc',lineDisc>0.005);
-  row('br-pnet',lineDisc>0.005);
-
-  const tradeItems=tradeOn?getTradeIns():[];
-  const tradeSum=tradeItems.reduce((s,it)=>s+it.base,0);
-  const oaVal=oaOn?toBase(parseFloat($('oacval').value)||0,$('oacur').value):0;
-  const oaSign=oaCredit?-1:1; // Debit (+) adds, Credit (−) deducts
-  const hasAdj=(tradeOn&&tradeSum>0)||oaVal>0;
-  const doTax=taxOn&&(statePct>0||ctyPct>0)&&has;
-  const doVat=vatOn&&vatPct>0&&has;
-  const showBd=has&&(hasAdj||doTax||doVat||prods.length>0);
-  $('bcard').style.display=showBd?'block':'none';
-
-  const adjusted=prodNet-tradeSum+oaSign*oaVal;
-
-  // Trade-in rows (dynamic)
-  const tiHtml=tradeItems.filter(it=>it.base>0).map(it=>{
-    const m=it.mod?` — ${it.mod}`:'';
-    const conv=it.cur!==from?` (${fmt(it.val,it.cur)})`:'';
-    return `<div class="br" data-img="${it.img||''}"><span class="bl">− ${t().tradeItem}${m}</span><span class="bv grn">${fmt(it.base,from)}${conv}</span></div>`;
-  }).join('');
-  const tiRowsEl=$('tiRows'); if(tiRowsEl) tiRowsEl.innerHTML=tiHtml;
-  if(oaVal>0){
-    const mn=$('oacmodel').value.trim();
-    const tag=oaCredit?'Credit':'Debit';
-    const sign=oaCredit?'− ':'+ ';
-    setText('bl-oa',sign+t().openBal+` (${tag})`+(mn?` — (${mn})`:''));
-    setText('bv-oa',sign+fmt(oaVal,from)+($('oacur').value!==from?` (${fmt(parseFloat($('oacval').value)||0,$('oacur').value)})`:''));
-    const bvoa=$('bv-oa'); bvoa.classList.toggle('grn',oaCredit); bvoa.classList.toggle('red',!oaCredit);
-  }
-  row('br-oa',oaVal>0);
-  row('br-adj',hasAdj); if(hasAdj) setText('bv-adj',fmt(adjusted,from));
-
-  const afterDisc=adjusted;
-
-  // Tax
-  let afterTax=afterDisc;
-  if(doTax){
-    const stateAmt=afterDisc*statePct/100;
-    const code=($('stateSel').selectedOptions[0]&&$('stateSel').selectedOptions[0].dataset.state)||'';
-    const cap=(COUNTIES[code]&&COUNTIES[code].cap)||null;
-    const ctyAmt=(cap?Math.min(afterDisc,cap):afterDisc)*ctyPct/100;
-    afterTax=afterDisc+stateAmt+ctyAmt;
-    setText('bv-t1',fmt(afterDisc,from));
-    setText('bl-t2',`${t().bdStateTax} (${pf(statePct)}%)`); setText('bv-t2','+ '+fmt(stateAmt,from));
-    setText('bl-t3',cap?`${t().bdCountySurtax} (${pf(ctyPct)}% ${t().bdOnFirst} ${fmt(cap,'USD')})`:`${t().bdCountySurtax} (${pf(ctyPct)}%)`);
-    setText('bv-t3','+ '+fmt(ctyAmt,from)); setText('bv-t4',fmt(afterTax,from));
-  }
-  row('br-t1',doTax); row('br-t2',doTax&&statePct>0); row('br-t3',doTax&&ctyPct>0); row('br-t4',doTax);
-
-  // VAT
-  let final=afterTax;
-  if(doVat){
-    const vAmt=afterTax*vatPct/100/(1+vatPct/100); final=afterTax-vAmt;
-    setText('bv-v1',fmt(afterTax,from));
-    setText('bl-v2',`${t().bdVat} (${pf(vatPct)}%)`); setText('bv-v2','− '+fmt(vAmt,from)); setText('bv-v3',fmt(final,from));
-  }
-  row('br-v1',doVat); row('br-v2',doVat); row('br-v3',doVat);
-
-  const ra=$('ramt');
-  if(!has){ ra.textContent='0.00'; ra.classList.add('ph'); row('br-fp',false); row('br-dep',false); row('br-bal',false); return; }
-  ra.classList.remove('ph');
-
-  // Deposit / Down Payment — per-product deposits summed and subtracted to give the balance due
-  const balanceBefore=doVat?final:(doTax?afterTax:adjusted);
-  const totalDeposit=prods.reduce((s,p)=>s+toBase(p.depAmt||0,p.depCur||from),0);
-  const hasDep=totalDeposit>0;
-  const finalVal=balanceBefore-totalDeposit;
-  if(hasDep){
-    setText('bv-fp',fmt(balanceBefore,from));
-    const fullPaid=finalVal<=0.005;
-    if(fullPaid){
-      const payNotes=prods.filter(p=>(p.depAmt||0)>0 && p.depNote && p.depNote.trim()).map(p=>p.depNote.trim()).join('; ');
-      setText('bl-dep', t().balancePayment + (payNotes?' — '+payNotes:''));
-    } else {
-      setText('bl-dep','− '+t().bdDeposit);
+    // Convert an amount given in currency `cur` into the current FROM currency
+    function toFrom(amount, cur) {
+      if (!amount || isNaN(amount) || amount === 0) return 0;
+      const from = fromCur.value;
+      if (cur === from) return amount;
+      const rCur = rates[cur];
+      if (!rCur) return amount;
+      return amount / rCur;
     }
-    setText('bv-dep','− '+fmt(totalDeposit,from));
-    setText('bv-bal',fmt(finalVal,from));
-  }
-  row('br-fp',hasDep); row('br-dep',hasDep); row('br-bal',hasDep);
 
-  ra.textContent=r!==null?fmt(finalVal*r,to):fmt(finalVal,from);
-}
+    function fmt(n, cur) {
+      if (cur === 'JPY') return (SYMBOLS[cur]||'') + Math.round(n).toLocaleString('en-US');
+      return (SYMBOLS[cur]||'') + n.toLocaleString('en-US', { minimumFractionDigits:2, maximumFractionDigits:2 });
+    }
+    function pctLabel(v) { return v % 1 === 0 ? v : parseFloat(v).toFixed(1); }
 
-async function fetchRate(){
-  $('dot').className='dot off'; $('rtxt').textContent=t().fetching;
-  let ok=false, src='';
-  const go=async u=>{const res=await fetch(u,{mode:'cors'});if(!res.ok)throw 0;return res.json()};
-  try{ const d=await go('https://open.er-api.com/v6/latest/EUR'); if(d.result==='success'){rates={...d.rates,EUR:1};src='er-api · hourly';ok=true;} }catch(e){}
-  if(!ok) try{ const d=await go('https://api.frankfurter.app/latest?from=EUR'); rates={EUR:1,...d.rates};src='ECB · daily';ok=true; }catch(e){}
-  if(!ok){ rates={...FB}; src='offline'; }
-  if(ok) $('dot').className='dot';
-  const from=$('fromCur').value, to=$('toCur').value;
-  const rFrom=rates[from]||1, rTo=rates[to]||1, rv=rTo/rFrom;
-  const tm=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  const dt=new Date().toLocaleDateString(dloc(),{day:'2-digit',month:'2-digit',year:'numeric'});
-  $('rtxt').textContent=`1 ${from} = ${fmt(rv,to)} ${to}  ·  ${dt} ${tm}  ·  ${src}`;
-  calc();
-}
+    function show(id, visible) {
+      document.getElementById(id).style.display = visible ? 'flex' : 'none';
+    }
 
-$('swapBtn').addEventListener('click',()=>{
-  $('swapBtn').classList.add('spin'); setTimeout(()=>$('swapBtn').classList.remove('spin'),300);
-  const tmp=$('fromCur').value; $('fromCur').value=$('toCur').value; $('toCur').value=tmp;
-  checkTax(); fetchRate();
-});
-$('fromCur').addEventListener('change',()=>{checkTax();fetchRate();});
-$('toCur').addEventListener('change',()=>{checkTax();fetchRate();});
+    const stateRateInput = document.getElementById('stateRate');
+    const countyRateInput = document.getElementById('countyRate');
 
-function applyBase(){
-  const b=$('baseCur').value;
-  ['fromCur','toCur','oacur'].forEach(id=>{const e=$(id);if(e)e.value=b;});
-  $('prodList').querySelectorAll('.prod-cur').forEach(s=>{s.value=b;});
-  $('prodList').querySelectorAll('.pfix-cur').forEach(s=>{s.value=b;});
-  $('prodList').querySelectorAll('.pdep-cur').forEach(s=>{s.value=b;});
-  $('tradeList').querySelectorAll('.tcur').forEach(s=>{s.value=b;});
-  checkTax(); fetchRate();
-}
-$('baseCur').addEventListener('change',applyBase);
+    function updateTaxVisibility() {
+      const isUSDUSD = fromCur.value === 'USD' && toCur.value === 'USD';
+      document.getElementById('taxBlock').classList.toggle('show', isUSDUSD);
+      document.getElementById('vatSection').style.display = isUSDUSD ? 'none' : 'block';
 
-document.querySelectorAll('#langTog .lt').forEach(b=>b.addEventListener('click',()=>applyLang(b.dataset.lang)));
+      // Same currency on both sides → preset the Fixed-discount currency to match
+      if (fromCur.value === toCur.value) { fixDiscCur.value = fromCur.value; }
 
-$('tradeToggle').addEventListener('click',()=>{
-  tradeOn=!tradeOn; $('tradeSw').classList.toggle('on',tradeOn);
-  $('tradeLbl').textContent=tradeOn?'on':'off'; $('tradeColl').classList.toggle('open',tradeOn); calc();
-});
-function updateOaDir(){
-  const sw=$('oaDirSw'); if(!sw) return;
-  sw.classList.toggle('credit',oaCredit);
-  const d=I18N[lang];
-  $('oaDirLbl').textContent=oaCredit?'Credit':'Debit';
-  $('oaDirLbl').style.color=oaCredit?'var(--green)':'var(--red)';
-  $('oaDirHint').textContent=oaCredit?d.oaCreditHint:d.oaDebitHint;
-  const inp=$('oacval'); if(inp) inp.style.color=oaCredit?'var(--green)':'var(--red)';
-  const grp=$('oacgroup'); if(grp) grp.style.borderColor=oaCredit?'var(--green)':'var(--red)';
-}
-$('oaToggle').addEventListener('click',()=>{
-  oaOn=!oaOn; $('oaSw').classList.toggle('on',oaOn);
-  $('oaLbl').textContent=oaOn?'on':'off'; $('oaColl').classList.toggle('open',oaOn); calc();
-});
-$('oaDirSw').addEventListener('click',()=>{ oaCredit=!oaCredit; updateOaDir(); calc(); });
-$('taxToggle').addEventListener('click',()=>{
-  taxOn=!taxOn; $('taxSw').classList.toggle('on',taxOn);
-  $('taxLbl').textContent=taxOn?'on':'off'; $('taxColl').classList.toggle('open',taxOn);
-  if(taxOn) applyTaxDefaults();
-  calc();
-});
-$('vatToggle').addEventListener('click',()=>{
-  vatOn=!vatOn; $('vatSw').classList.toggle('on',vatOn);
-  $('vatLbl').textContent=vatOn?'on':'off'; $('vatColl').classList.toggle('open',vatOn); calc();
-});
+      if (isUSDUSD && vatOn) {
+        vatOn = false;
+        document.getElementById('vatSwitch').classList.remove('on');
+        document.getElementById('vatLabel').textContent = 'off';
+        document.getElementById('vatControls').classList.remove('visible');
+      }
+      if (!isUSDUSD && taxOn) {
+        taxOn = false;
+        document.getElementById('taxSwitch').classList.remove('on');
+        document.getElementById('taxLabel').textContent = 'off';
+        document.getElementById('taxControls').classList.remove('visible');
+      }
+    }
 
-document.querySelectorAll('.pb[data-g]').forEach(b=>{
-  b.addEventListener('click',()=>{
-    const g=b.dataset.g, inp=$('vatRate');
-    const peers=document.querySelectorAll(`.pb[data-g="${g}"]`);
-    if(b.classList.contains('on')){ inp.value=''; peers.forEach(p=>p.classList.remove('on')); }
-    else { inp.value=b.dataset.v; peers.forEach(p=>p.classList.remove('on')); b.classList.add('on'); }
-    calc();
-  });
-});
+    // US Sales Tax — toggle
+    document.getElementById('taxToggle').addEventListener('click', () => {
+      taxOn = !taxOn;
+      document.getElementById('taxSwitch').classList.toggle('on', taxOn);
+      document.getElementById('taxLabel').textContent = taxOn ? 'on' : 'off';
+      document.getElementById('taxControls').classList.toggle('visible', taxOn);
+      calculate();
+    });
 
-['oacur'].forEach(id=>$(id).addEventListener('change',calc));
-['oacval','oacmodel'].forEach(id=>$(id).addEventListener('input',calc));
+    document.getElementById('stateSel').addEventListener('change', () => {
+      const opt = document.getElementById('stateSel').selectedOptions[0];
+      stateRateInput.value = opt ? opt.value : '';
+      const code = opt ? opt.dataset.state : '';
+      const cd = COUNTIES[code] || null;
+      const cs = document.getElementById('countySel');
+      cs.innerHTML = '<option value="">Select county…</option>';
+      countyRateInput.value = '';
+      document.getElementById('capNote').style.display = 'none';
+      if (cd && Object.keys(cd.list).length) {
+        Object.entries(cd.list).forEach(([n, r]) => { const o = document.createElement('option'); o.value = r; o.textContent = `${n}  (+${r}%)`; cs.appendChild(o); });
+        document.getElementById('countyWrap').style.display = 'block';
+      } else {
+        document.getElementById('countyWrap').style.display = 'none';
+      }
+      calculate();
+    });
+    document.getElementById('countySel').addEventListener('change', () => {
+      const v = document.getElementById('countySel').value;
+      countyRateInput.value = v;
+      const code = (document.getElementById('stateSel').selectedOptions[0] && document.getElementById('stateSel').selectedOptions[0].dataset.state) || '';
+      document.getElementById('capNote').style.display = (v && COUNTIES[code] && COUNTIES[code].cap) ? 'inline' : 'none';
+      calculate();
+    });
+    stateRateInput.addEventListener('input', calculate);
+    countyRateInput.addEventListener('input', calculate);
 
-function doCopy(){
-  const txt=$('ramt').textContent;
-  if(!txt||txt==='0.00'||txt==='—') return;
-  const btn=$('cpbtn'), f=$('cpField');
-  f.value=txt;
-  f.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);opacity:1;z-index:9999;font-size:16px;';
-  f.focus(); f.setSelectionRange(0,99999);
-  let ok=false; try{ ok=document.execCommand('copy'); }catch(e){}
-  f.style.cssText='position:fixed;top:-9999px;left:-9999px;font-size:16px;';
-  const done=()=>{ $('cpbtn').textContent=t().copied; $('cpbtn').classList.add('ok'); setTimeout(()=>{ $('cpbtn').textContent=t().copy; $('cpbtn').classList.remove('ok'); },1500); };
-  if(ok) done();
-  else if(navigator.clipboard){ navigator.clipboard.writeText(txt).then(done).catch(()=>window.prompt('Copia:',txt)); }
-  else window.prompt('Copia:',txt);
-}
+    function calculate() {
+      const raw  = parseFloat(amountInput.value);
+      const from = fromCur.value, to = toCur.value;
+      const r    = rates[to];
+      const vatPct  = vatOn  ? (parseFloat(vatRateInput.value)  || 0) : 0;
+      const discPct = discOn ? (parseFloat(discRateInput.value) || 0) : 0;
 
-function doPrint(){
-  const from=$('fromCur').value, to=$('toCur').value;
-  const L=t();
-  const clientName=($('clientName')&&$('clientName').value.trim())||'';
-  const clientAddr=($('clientAddr')&&$('clientAddr').value.trim())||'';
-  const clientCity=($('clientCity')&&$('clientCity').value.trim())||'';
-  const clientCountry=($('clientCountry')&&$('clientCountry').value.trim())||'';
-  const vendorName=($('vendorName')&&$('vendorName').value.trim())||'';
-  const vendorAddr=($('vendorAddr')&&$('vendorAddr').value.trim())||'';
-  const vendorCity=($('vendorCity')&&$('vendorCity').value.trim())||'';
-  const vendorCountry=($('vendorCountry')&&$('vendorCountry').value.trim())||'';
-  const hasClient=clientName||clientAddr||clientCity||clientCountry;
-  const hasVendor=vendorName||vendorAddr||vendorCity||vendorCountry;
+      fromTag.textContent = from;
+      document.getElementById('toFlag').textContent = FLAGS[to] || '💱';
+      document.getElementById('toCode').textContent = to;
 
-  // Products
-  const prods=getProducts().filter(p=>p.amt>0);
-  const anyImg=prods.some(p=>p.img);
-  const prodsHtml=prods.map((p,i)=>{
-    const g=lineGrossBase(p), net=lineNetBase(p), hd=g-net>0.005;
-    const thumbCell=anyImg?`<td class="thumb">${p.img?`<img src="${p.img}"/>`:''}</td>`:'';
-    const sub=p.discPct?`<div class="ps-it-sub">− ${pf(p.discPct)}%</div>`:'';
-    return `<tr>${thumbCell}<td><div class="ps-it-name">${p.mod||L.pProduct+' '+(i+1)}</div>${sub}</td><td class="ps-it-amt">${fmt(net,from)}${hd?`<s>${fmt(g,from)}</s>`:''}</td></tr>`;
-  }).join('');
+      const hasInput   = !isNaN(raw) && amountInput.value !== '';
+      const isUSDUSD   = from === 'USD' && to === 'USD';
+      const statePct   = taxOn ? (parseFloat(stateRateInput.value)  || 0) : 0;
+      const ctyPct     = taxOn ? (parseFloat(countyRateInput.value) || 0) : 0;
+      const fixDiscAmt = discOn ? toFrom(parseFloat(fixDiscVal.value) || 0, fixDiscCur.value) : 0;
+      const showDisc   = discOn && (discPct > 0 || fixDiscAmt > 0) && hasInput;
+      const showTax    = taxOn  && isUSDUSD && (statePct > 0 || ctyPct > 0) && hasInput;
+      const showVat    = vatOn  && !isUSDUSD && vatPct > 0 && hasInput;
+      const showBd     = showDisc || showTax || showVat;
 
-  // Breakdown rows
-  const rows=[];
-  document.querySelectorAll('#bcard .br').forEach(br=>{
-    if(br.style.display==='none') return;
-    if(br.id==='br-d2') return;
-    const lbl=br.querySelector('.bl'), val=br.querySelector('.bv');
-    if(!lbl||!val) return;
-    let colorClass='';
-    if(val.classList.contains('grn')) colorClass='grn';
-    else if(val.classList.contains('red')) colorClass='red';
-    else if(val.classList.contains('ora')) colorClass='ora';
-    else if(val.classList.contains('blu')) colorClass='blu';
-    const bold=lbl.textContent.includes(L.bdAfterAdj)||lbl.textContent.includes(L.bdAfterDisc)||lbl.textContent.includes(L.bdAfterTax)||lbl.textContent.includes(L.bdNet)||lbl.textContent.includes(L.bdFinal)||lbl.textContent.includes(L.bdBalanceDue);
-    const img=br.dataset.img||'';
-    rows.push({lbl:lbl.textContent,val:val.textContent,colorClass,bold,img});
-  });
+      document.getElementById('breakdownCard').style.display = showBd ? 'block' : 'none';
 
-  const result=$('ramt').textContent;
-  const flag=$('toFlag').textContent;
-  const code=$('toCode').textContent;
-  const rateInfo=$('rtxt').textContent;
-  const dateStr=new Date().toLocaleDateString(dloc(),{day:'2-digit',month:'2-digit',year:'numeric'})+' '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-  const orderNo=($('orderNo')&&$('orderNo').value.trim())||'';
-  const orderDateRaw=($('orderDate')&&$('orderDate').value)||'';
-  const orderDate=orderDateRaw?new Date(orderDateRaw+'T00:00:00').toLocaleDateString(dloc(),{day:'2-digit',month:'2-digit',year:'numeric'}):'';
-  const fnDate=(orderDateRaw?new Date(orderDateRaw+'T00:00:00'):new Date()).toLocaleDateString(dloc(),{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-');
-  const fileTitle=`WDP${orderNo?' '+orderNo:''} ${fnDate}`;
+      let base = hasInput ? raw : 0;
 
-  const itemHdr=lang==='it'?'Nuovo Articolo':'New Item';
-  const amtHdr=lang==='it'?'Importo':'Amount';
+      // Discount first (percentage + fixed amount)
+      let afterDisc = base;
+      if (showDisc) {
+        const pctAmt = base * discPct / 100;
+        afterDisc = base - pctAmt - fixDiscAmt;
+        document.getElementById('d-orig').textContent    = fmt(base, from);
+        document.getElementById('d-discpct').textContent = pctLabel(discPct);
+        document.getElementById('d-disc').textContent    = '− ' + fmt(pctAmt, from);
+        document.getElementById('d-fixdisc').textContent = '− ' + fmt(fixDiscAmt, from);
+        document.getElementById('d-saved').textContent   = fmt(pctAmt + fixDiscAmt, from);
+        document.getElementById('d-after').textContent   = fmt(afterDisc, from);
+      }
+      show('row-orig',      showDisc);
+      show('row-disc',      showDisc && discPct > 0);
+      show('row-fixdisc',   showDisc && fixDiscAmt > 0);
+      show('row-saved',     showDisc);
+      show('row-after-disc',showDisc);
 
-  const mkParty=(label,name,addr,city,country)=>`<div class="ps-party"><div class="ps-party-lbl">${label}</div>${name?`<div class="ps-party-name">${name}</div>`:''}${addr?`<div class="ps-party-line">${addr}</div>`:''}${city?`<div class="ps-party-line">${city}</div>`:''}${country?`<div class="ps-party-line">${country}</div>`:''}</div>`;
-  const partyHtml=(hasClient||hasVendor)?`<div class="ps-parties">${hasVendor?mkParty(L.pVendor,vendorName,vendorAddr,vendorCity,vendorCountry):''}${hasClient?mkParty(L.pClient,clientName,clientAddr,clientCity,clientCountry):''}</div>`:'';
+      // US Sales Tax (additive, after discount) — only when From & To = USD
+      let afterTax = afterDisc;
+      if (showTax) {
+        const stateAmt = afterDisc * statePct / 100;
+        const code = (document.getElementById('stateSel').selectedOptions[0] && document.getElementById('stateSel').selectedOptions[0].dataset.state) || '';
+        const cap = (COUNTIES[code] && COUNTIES[code].cap) || null;
+        const ctyAmt = (cap ? Math.min(afterDisc, cap) : afterDisc) * ctyPct / 100;
+        afterTax = afterDisc + stateAmt + ctyAmt;
+        document.getElementById('t-pretax').textContent   = fmt(afterDisc, from);
+        document.getElementById('t-statepct').textContent = pctLabel(statePct);
+        document.getElementById('t-state').textContent    = '+ ' + fmt(stateAmt, from);
+        document.getElementById('t-county-label').textContent = cap
+          ? `County surtax (${pctLabel(ctyPct)}% on first ${fmt(cap, 'USD')})`
+          : `County surtax (${pctLabel(ctyPct)}%)`;
+        document.getElementById('t-county').textContent   = '+ ' + fmt(ctyAmt, from);
+        document.getElementById('t-aftertax').textContent = fmt(afterTax, from);
+      }
+      show('row-pretax',   showTax);
+      show('row-state',    showTax && statePct > 0);
+      show('row-county',   showTax && ctyPct > 0);
+      show('row-aftertax', showTax);
 
-  const summaryHtml=rows.map(r=>{
-    const thumb=r.img?`<img src="${r.img}"/>`:'';
-    return `<div class="ps-srow${r.bold?' bold':''}"><span class="k">${thumb}${r.lbl}</span><span class="v${r.colorClass?' '+r.colorClass:''}">${r.val}</span></div>`;
-  }).join('');
+      // VAT deduction on post-discount amount — only when NOT USD/USD
+      let finalAmount = afterTax;
+      if (showVat) {
+        const vatAmt = afterTax * vatPct / 100 / (1 + vatPct / 100);
+        finalAmount  = afterTax - vatAmt;
+        document.getElementById('v-gross').textContent   = fmt(afterTax, from);
+        document.getElementById('v-vatpct').textContent  = pctLabel(vatPct);
+        document.getElementById('v-vat').textContent     = '− ' + fmt(vatAmt, from);
+        document.getElementById('v-net').textContent     = fmt(finalAmount, from);
+      }
+      show('row-gross', showVat);
+      show('row-vat',   showVat);
+      show('row-net',   showVat);
 
-  const payItems=prods.filter(p=>p.pay);
-  const payHtml=payItems.length?`<div class="ps-pay"><div class="ps-pay-lbl">${L.payCopy}</div><div class="ps-pay-list">${payItems.map(p=>`<div class="ps-pay-item"><div class="ps-pay-box"><img src="${p.pay}"/></div>${p.mod?`<div class="ps-pay-cap">${p.mod}</div>`:''}</div>`).join('')}</div></div>`:'';
+      // Result
+      const resultEl  = document.getElementById('resultAmt');
+      const resultSub = document.getElementById('resultSub');
 
-  const inner=`
-  <div class="ps-top">
-    <div>
-      <div class="ps-eyebrow">${L.eyebrow}</div>
-      <div class="ps-brand">WATCH<b>DESK</b> <b>PRO</b><span class="ps-vpill">${APP_VERSION}</span></div>
-    </div>
-    <div class="ps-ord">
-      <div class="ps-ord-lbl">${L.pOrder}</div>
-      ${orderNo?`<div class="ps-ord-no">${orderNo}</div>`:''}
-      <div class="ps-ord-date">${orderDate||dateStr}</div>
-    </div>
-  </div>
-  <div class="ps-goldline"></div>
-  ${partyHtml}
-  ${prodsHtml?`<div class="ps-seclbl">${L.pProducts}</div><table class="ps-items"><thead><tr>${anyImg?'<th class="thumb"></th>':''}<th>${itemHdr}</th><th class="r">${amtHdr}</th></tr></thead><tbody>${prodsHtml}</tbody></table>`:''}
-  ${summaryHtml?`<div class="ps-summary">${summaryHtml}</div>`:''}
-  <div class="ps-total">
-    <div><div class="ps-total-lbl">${L.pResult}</div></div>
-    <div>
-      <div class="ps-total-amt">${result}</div>
-      <div class="ps-total-cur"><span class="ps-total-flag">${flag}</span>${code}</div>
-    </div>
-  </div>
-  ${payHtml}
-  <div class="ps-foot"><span>${rateInfo}</span></div>
-  `;
+      if (!hasInput) {
+        resultEl.textContent = '0.00';
+        resultEl.classList.add('placeholder');
+        resultSub.style.display = 'none';
+        document.getElementById('resultLabel').textContent = 'Result';
+        return;
+      }
 
-  const sheet=$('printSheet');
-  sheet.innerHTML=inner;
-  const prevTitle=document.title;
-  document.title=fileTitle;
-  const restore=()=>{ document.title=prevTitle; window.removeEventListener('afterprint',restore); };
-  window.addEventListener('afterprint',restore);
-  setTimeout(()=>{ try{ window.focus(); }catch(e){} window.print(); },60);
-  setTimeout(restore,8000);
-}
+      resultEl.classList.remove('placeholder');
+      resultEl.textContent = r ? fmt(finalAmount * r, to) : '—';
 
-// Init — base currency defaults to EUR, cascade to all fields
-$('baseCur').value='EUR';
-['fromCur','toCur','oacur'].forEach(id=>{const e=$(id);if(e)e.value='EUR';});
-(function(){
-  const d=new Date();
-  const iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-  const od=$('orderDate'); if(od&&!od.value) od.value=iso;
-})();
-addProduct();
-addTradeIn();
-(function(){const vp=$('verPill'); if(vp) vp.textContent=APP_VERSION;})();
-updateOaDir();
-applyLang(lang);
-checkTax();
-fetchRate();
-setInterval(fetchRate,60000);
-</script>
-<div id="printSheet"></div>
+      if (isUSDUSD) {
+        document.getElementById('resultLabel').textContent = showTax ? 'Total incl. tax' : 'Result';
+        resultSub.style.display = 'none';
+      } else if (showDisc || showVat) {
+        document.getElementById('resultLabel').textContent = 'Converted result';
+        resultSub.textContent = `Base: ${fmt(finalAmount, from)}`;
+        resultSub.style.display = 'block';
+      } else {
+        document.getElementById('resultLabel').textContent = 'Result';
+        resultSub.style.display = 'none';
+      }
+    }
+
+    async function fetchRate() {
+      updateTaxVisibility();
+      document.getElementById('liveDot').classList.add('loading');
+      document.getElementById('rateText').textContent = 'Fetching live rates…';
+      const from = fromCur.value;
+      let ok = false, source = '';
+
+      const tryFetch = async (url) => {
+        const res = await fetch(url, { mode:'cors' });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      };
+
+      if (!ok) try {
+        const data = await tryFetch(`https://open.er-api.com/v6/latest/${from}`);
+        if (data.result === 'success') {
+          rates = { ...data.rates, [from]:1 };
+          source = 'er-api · hourly'; ok = true;
+        }
+      } catch(e) { }
+
+      if (!ok) try {
+        const data = await tryFetch(`https://api.frankfurter.app/latest?from=${from}`);
+        rates = { [from]:1, ...data.rates };
+        source = 'ECB · daily'; ok = true;
+      } catch(e) { }
+
+      if (!ok) {
+        const base = FALLBACK[from] || 1;
+        rates = {};
+        Object.keys(FALLBACK).forEach(k => rates[k] = FALLBACK[k] / base);
+        rates[from] = 1;
+        source = 'offline · fallback';
+      }
+
+      if (ok) document.getElementById('liveDot').classList.remove('loading');
+
+      const to = toCur.value, r = rates[to];
+      const t = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+      const d = new Date().toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit', year:'numeric' });
+      document.getElementById('rateText').textContent = r
+        ? `1 ${from} = ${fmt(r, to)} ${to}  ·  ${d} ${t}  ·  ${source}`
+        : `Rate unavailable · ${source}`;
+      calculate();
+    }
+
+    document.getElementById('swapBtn').addEventListener('click', () => {
+      const b = document.getElementById('swapBtn');
+      b.classList.add('spinning'); setTimeout(() => b.classList.remove('spinning'), 300);
+      const tmp = fromCur.value; fromCur.value = toCur.value; toCur.value = tmp;
+      fetchRate();
+    });
+
+    function copyResult() {
+      const txt = document.getElementById('resultAmt').textContent;
+      if (!txt || txt === '0.00' || txt === '—') return;
+      const btn = document.getElementById('copyBtn');
+      const field = document.getElementById('copyField');
+
+      field.value = txt;
+      field.style.position = 'fixed';
+      field.style.top = '50%';
+      field.style.left = '50%';
+      field.style.transform = 'translate(-50%,-50%)';
+      field.style.opacity = '1';
+      field.style.zIndex = '9999';
+      field.focus();
+      field.setSelectionRange(0, 99999);
+
+      let copied = false;
+      try { copied = document.execCommand('copy'); } catch(e) {}
+
+      field.style.position = 'fixed';
+      field.style.top = '-9999px';
+      field.style.left = '-9999px';
+      field.style.opacity = '0';
+      field.style.zIndex = '';
+      field.style.transform = '';
+
+      if (copied) {
+        btn.textContent = '✓ copied';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '⎘ copy'; btn.classList.remove('copied'); }, 1500);
+      } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(txt).then(() => {
+          btn.textContent = '✓ copied';
+          btn.classList.add('copied');
+          setTimeout(() => { btn.textContent = '⎘ copy'; btn.classList.remove('copied'); }, 1500);
+        }).catch(() => { window.prompt('Copia questo importo:', txt); });
+      } else {
+        window.prompt('Copia questo importo:', txt);
+      }
+    }
+
+    fromCur.addEventListener('change', fetchRate);
+    toCur.addEventListener('change', fetchRate);
+    amountInput.addEventListener('input', calculate);
+    amountInput.addEventListener('change', fetchRate);
+
+    // VAT toggle
+    document.getElementById('vatToggle').addEventListener('click', () => {
+      vatOn = !vatOn;
+      document.getElementById('vatSwitch').classList.toggle('on', vatOn);
+      document.getElementById('vatLabel').textContent = vatOn ? 'on' : 'off';
+      document.getElementById('vatControls').classList.toggle('visible', vatOn);
+      calculate();
+    });
+    vatRateInput.addEventListener('input', () => {
+      document.querySelectorAll('.vat-preset').forEach(b => b.classList.toggle('active', parseFloat(b.dataset.pct) === parseFloat(vatRateInput.value)));
+      calculate();
+    });
+    document.querySelectorAll('.vat-preset').forEach(btn => btn.addEventListener('click', () => {
+      if (btn.classList.contains('active')) {
+        vatRateInput.value = '';
+        document.querySelectorAll('.vat-preset').forEach(b => b.classList.remove('active'));
+      } else {
+        vatRateInput.value = btn.dataset.pct;
+        document.querySelectorAll('.vat-preset').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
+      calculate();
+    }));
+
+    // Discount toggle
+    document.getElementById('discToggle').addEventListener('click', () => {
+      discOn = !discOn;
+      document.getElementById('discSwitch').classList.toggle('on', discOn);
+      document.getElementById('discLabel').textContent = discOn ? 'on' : 'off';
+      document.getElementById('discControls').classList.toggle('visible', discOn);
+      calculate();
+    });
+    discRateInput.addEventListener('input', () => {
+      document.querySelectorAll('.disc-preset').forEach(b => b.classList.toggle('active', parseFloat(b.dataset.pct) === parseFloat(discRateInput.value)));
+      calculate();
+    });
+    fixDiscCur.addEventListener('change', calculate);
+    fixDiscVal.addEventListener('input', calculate);
+    document.querySelectorAll('.disc-preset').forEach(btn => btn.addEventListener('click', () => {
+      if (btn.classList.contains('active')) {
+        discRateInput.value = '';
+        document.querySelectorAll('.disc-preset').forEach(b => b.classList.remove('active'));
+      } else {
+        discRateInput.value = btn.dataset.pct;
+        document.querySelectorAll('.disc-preset').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      }
+      calculate();
+    }));
+
+    // Hide top currency boxes in print when there is no conversion (From == To)
+    window.addEventListener('beforeprint', () => {
+      document.body.classList.toggle('no-convert', fromCur.value === toCur.value);
+    });
+
+    // Set print date
+    document.getElementById('printDate').textContent =
+      'Printed: ' + new Date().toLocaleDateString('it-IT', { day:'2-digit', month:'2-digit', year:'numeric' });
+
+    // Default US tax selection: Florida + Miami-Dade (ready when USD/USD tax is turned on)
+    (function initTaxDefaults() {
+      const sel = document.getElementById('stateSel');
+      const fl = [...sel.options].find(o => o.dataset && o.dataset.state === 'FL');
+      if (fl) { fl.selected = true; sel.dispatchEvent(new Event('change')); }
+      const cs = document.getElementById('countySel');
+      const md = [...cs.options].find(o => o.textContent.trim().startsWith('Miami-Dade'));
+      if (md) { md.selected = true; cs.dispatchEvent(new Event('change')); }
+    })();
+
+    fetchRate();
+    setInterval(fetchRate, 60000);
+  </script>
 </body>
 </html>
